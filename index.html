@@ -23,75 +23,86 @@ canvas { display:block; background:#0d2818; }
 }
 #splashOverlay {
     position:absolute; inset:0;
-    background:linear-gradient(to bottom, rgba(10,26,10,0.2) 0%, rgba(10,26,10,0.6) 60%, rgba(10,26,10,0.9) 100%);
+    background:linear-gradient(to bottom, rgba(10,26,10,0.3) 0%, rgba(10,26,10,0.7) 70%, rgba(10,26,10,0.95) 100%);
 }
 .splash-content {
     position:relative; z-index:2;
     display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
-    width:100%; height:100%; padding-bottom:80px;
+    width:100%; height:100%; padding-bottom:60px;
 }
 .loading-title {
     color:#ffd700;
-    font-size:1.4em;
+    font-size:1.8em;
     font-weight:bold;
-    text-shadow:0 4px 20px rgba(0,0,0,0.9);
-    margin-bottom:16px;
-    letter-spacing:4px;
+    text-shadow:0 4px 20px rgba(0,0,0,0.8);
+    margin-bottom:20px;
+    letter-spacing:3px;
 }
 .loading-bar-wrap {
-    width:60%; max-width:320px;
-    height:4px;
-    background:rgba(255,255,255,0.12);
+    width:70%; max-width:400px;
+    height:6px;
+    background:rgba(255,255,255,0.15);
     border-radius:10px;
     overflow:hidden;
+    box-shadow:0 0 30px rgba(255,215,0,0.1);
 }
 .loading-bar {
     height:100%;
     width:0%;
-    background:linear-gradient(90deg, #ffd700, #ffec8b);
+    background:linear-gradient(90deg, #ffd700, #ffec8b, #ffd700);
     border-radius:10px;
     transition:width 0.3s ease;
+    box-shadow:0 0 20px rgba(255,215,0,0.3);
 }
 .loading-percent {
-    color:rgba(255,255,255,0.5);
-    font-size:0.8em;
-    margin-top:10px;
+    color:rgba(255,255,255,0.6);
+    font-size:0.9em;
+    margin-top:12px;
     font-weight:300;
+    letter-spacing:1px;
+}
+.loading-status {
+    color:rgba(255,255,255,0.4);
+    font-size:0.7em;
+    margin-top:6px;
     letter-spacing:2px;
-}
-
-/* ===== МЕНЮ С ЧЕРНЫМ ШАРОМ ===== */
-.menu-header {
-    display:flex; flex-direction:column; align-items:center; margin-bottom:6px;
-}
-.menu-ball {
-    width:72px; height:72px;
-    border-radius:50%;
-    background:radial-gradient(circle at 35% 28%, #555, #111 55%, #000 100%);
-    box-shadow:0 6px 30px rgba(0,0,0,0.8), inset -6px -6px 20px rgba(0,0,0,0.6), inset 6px 6px 20px rgba(255,255,255,0.04);
-    margin-bottom:6px;
-    position:relative;
-}
-.menu-ball::after {
-    content:'';
-    position:absolute; top:18%; left:22%;
-    width:28%; height:16%;
-    background:radial-gradient(circle, rgba(255,255,255,0.25), transparent);
-    border-radius:50%;
-    transform:rotate(-35deg);
-}
-.menu-ball-number {
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    color:rgba(255,255,255,0.12);
-    font-size:26px; font-weight:bold;
-    font-family:'Arial',sans-serif;
+    text-transform:uppercase;
 }
 
 /* ===== ОСТАЛЬНЫЕ СТИЛИ ===== */
 .overlay { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
   background:radial-gradient(circle at 50% 30%, #1a4028, #08150c); z-index:20; text-align:center; padding:20px; }
 .hidden { display:none !important; }
+
+/* Меню с черным шаром */
+.menu-header {
+    display:flex; flex-direction:column; align-items:center; margin-bottom:10px;
+}
+.menu-ball {
+    width:80px; height:80px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #555, #111 60%, #000 100%);
+    box-shadow:0 8px 40px rgba(0,0,0,0.8), inset -8px -8px 20px rgba(0,0,0,0.5), inset 8px 8px 20px rgba(255,255,255,0.05);
+    margin-bottom:8px;
+    position:relative;
+}
+.menu-ball::after {
+    content:'';
+    position:absolute; top:20%; left:25%;
+    width:25%; height:15%;
+    background:radial-gradient(circle, rgba(255,255,255,0.3), transparent);
+    border-radius:50%;
+    transform:rotate(-30deg);
+}
+.menu-ball-number {
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    color:rgba(255,255,255,0.15);
+    font-size:28px; font-weight:bold;
+    font-family:'Arial',sans-serif;
+    text-shadow:0 2px 4px rgba(0,0,0,0.5);
+}
+
 h1 { color:#ffd700; font-size:2.4em; text-shadow:0 3px 8px #000; margin-bottom:8px; letter-spacing:1px; }
 .sub { color:#8fbf8f; margin-bottom:24px; font-size:1em; }
 .btn { background:linear-gradient(145deg,#ffd700,#e6a800); color:#3a2a00; border:none; padding:15px 34px;
@@ -102,13 +113,54 @@ h1 { color:#ffd700; font-size:2.4em; text-shadow:0 3px 8px #000; margin-bottom:8
 .btn2:active { box-shadow:0 1px 0 #1b5e20; }
 .btn3 { background:linear-gradient(145deg,#ff9800,#e65100); color:#fff; box-shadow:0 5px 0 #bf360c,0 8px 15px rgba(0,0,0,.4); }
 
-#hud { position:fixed; top:0; left:0; width:100%; display:flex; justify-content:space-between; align-items:center;
-  padding:8px 12px; z-index:10; pointer-events:none; }
-.hbox { background:rgba(0,0,0,.55); border-radius:14px; padding:6px 12px; color:#fff; font-size:.9em; font-weight:bold;
-  display:flex; align-items:center; gap:6px; backdrop-filter:blur(4px); }
+/* ===== ФИКСИРОВАННЫЙ HUD С ЦЕНТРИРОВАНИЕМ ===== */
+#hud {
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:8px 12px;
+    z-index:10;
+    pointer-events:none;
+    box-sizing:border-box;
+}
+#hud .hud-inner {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    width:100%;
+    max-width:600px; /* фиксированная ширина для широких экранов */
+    margin:0 auto;
+    pointer-events:none;
+}
+.hbox {
+    background:rgba(0,0,0,.55);
+    border-radius:14px;
+    padding:6px 12px;
+    color:#fff;
+    font-size:.9em;
+    font-weight:bold;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    backdrop-filter:blur(4px);
+    pointer-events:auto;
+}
 .coin { color:#ffd700; }
-.hbtn { pointer-events:auto; background:rgba(0,0,0,.55); color:#fff; border:none; padding:8px 12px; border-radius:12px;
-  font-size:1.1em; cursor:pointer; }
+.hbtn {
+    pointer-events:auto;
+    background:rgba(0,0,0,.55);
+    color:#fff;
+    border:none;
+    padding:8px 12px;
+    border-radius:12px;
+    font-size:1.1em;
+    cursor:pointer;
+    line-height:1;
+}
 
 #powerWrap { position:fixed; bottom:14px; left:50%; transform:translateX(-50%); width:70%; max-width:340px;
   height:22px; background:rgba(0,0,0,.5); border-radius:12px; z-index:10; overflow:hidden; display:none; border:2px solid rgba(255,255,255,.15);}
@@ -137,42 +189,34 @@ h1 { color:#ffd700; font-size:2.4em; text-shadow:0 3px 8px #000; margin-bottom:8
 .pause-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:15; display:flex; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
 .pause-overlay.hidden { display:none; }
 .pause-overlay .btn { margin:10px; }
-
-/* Фон уровня */
-.level-bg {
-    position:fixed; inset:0; z-index:0;
-    background-size:cover;
-    background-position:center;
-    opacity:0.4;
-    pointer-events:none;
-}
 </style>
 </head>
 <body>
 
 <!-- ===== ЗАГРУЗОЧНЫЙ ЭКРАН ===== -->
 <div id="splashScreen">
-    <img id="splashImage" src="assets/img/splash/splash.jpg" alt="Loading">
+    <img id="splashImage" src="assets/img/splash/splash.jpg" alt="Loading" style="display:none;" onerror="this.style.display='none'">
     <div id="splashOverlay"></div>
     <div class="splash-content">
-        <div class="loading-title">ЗАГРУЗКА</div>
+        <div class="loading-title">БИЛЬЯРД МАСТЕР</div>
         <div class="loading-bar-wrap">
             <div class="loading-bar" id="loadingBar"></div>
         </div>
         <div class="loading-percent" id="loadingPercent">0%</div>
+        <div class="loading-status" id="loadingStatus">ЗАГРУЗКА АССЕТОВ...</div>
     </div>
 </div>
 
-<div id="game">
-    <div id="levelBg" class="level-bg" style="display:none;"></div>
-    <canvas id="cv"></canvas>
-</div>
+<div id="game"><canvas id="cv"></canvas></div>
 
+<!-- ===== HUD С ВНУТРЕННИМ КОНТЕЙНЕРОМ ===== -->
 <div id="hud" class="hidden">
-  <div class="hbox">Ур. <span id="lvlNum">1</span></div>
-  <div class="hbox">Шары: <span id="ballCount">0</span></div>
-  <div class="hbox coin">🪙 <span id="coins">0</span></div>
-  <button class="hbtn" id="pauseBtn">⏸</button>
+    <div class="hud-inner">
+        <div class="hbox">Ур. <span id="lvlNum">1</span></div>
+        <div class="hbox">Шары: <span id="ballCount">0</span></div>
+        <div class="hbox coin">🪙 <span id="coins">0</span></div>
+        <button class="hbtn" id="pauseBtn">⏸</button>
+    </div>
 </div>
 
 <div id="powerWrap"><div id="powerBar"></div></div>
@@ -232,131 +276,94 @@ h1 { color:#ffd700; font-size:2.4em; text-shadow:0 3px 8px #000; margin-bottom:8
 // ============================================================
 // 1. ЗАГРУЗЧИК
 // ============================================================
-const ASSETS_TO_LOAD = [
-    'assets/img/splash/splash.jpg',
-    'assets/sound/hit.mp3',
-    'assets/sound/pot.mp3',
-    'assets/sound/win.mp3',
-    'assets/sound/fail.mp3',
-];
-
-// Кэш фонов уровней
-const levelBgCache = {};
+const ASSETS = {
+    images: [
+        'assets/img/splash/splash.jpg',
+        'assets/img/cues/cue1.png',
+        'assets/img/cues/cue2.png',
+        'assets/img/balls/ball1.png',
+        'assets/img/balls/ball2.png',
+    ],
+    sounds: [
+        'assets/sound/hit.mp3',
+        'assets/sound/pot.mp3',
+        'assets/sound/win.mp3',
+        'assets/sound/fail.mp3',
+    ]
+};
 
 let loadedCount = 0;
-const totalAssets = ASSETS_TO_LOAD.length;
-const MIN_LOAD_TIME = 3000;
+const totalAssets = ASSETS.images.length + ASSETS.sounds.length;
+const MIN_LOAD_TIME = 3000; // минимум 3 секунды
 let startTime = Date.now();
 
-function updateLoader(progress) {
+function updateLoader(progress, status) {
     const bar = document.getElementById('loadingBar');
     const percent = document.getElementById('loadingPercent');
+    const statusEl = document.getElementById('loadingStatus');
     const pct = Math.min(100, Math.round(progress * 100));
     bar.style.width = pct + '%';
     percent.textContent = pct + '%';
+    if (status) statusEl.textContent = status;
 }
 
-function loadAsset(url) {
+function loadAsset(url, type) {
     return new Promise((resolve) => {
-        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-        const isSound = /\.(mp3|wav|ogg)$/i.test(url);
-        
-        if (isImage) {
+        if (type === 'image') {
             const img = new Image();
-            img.onload = () => { console.log('Загружено:', url); resolve(); };
-            img.onerror = () => { console.warn('Не загружено:', url); resolve(); };
+            img.onload = () => resolve();
+            img.onerror = () => resolve(); // продолжаем даже при ошибке
             img.src = url;
-        } else if (isSound) {
-            setTimeout(() => { console.log('Загружено (звук):', url); resolve(); }, 150 + Math.random() * 200);
+        } else if (type === 'sound') {
+            // Имитация загрузки звука
+            setTimeout(resolve, 200 + Math.random() * 300);
         } else {
-            setTimeout(resolve, 100);
+            resolve();
         }
     });
 }
 
 async function loadAllAssets() {
-    document.getElementById('splashScreen').classList.remove('hidden');
-    
-    console.log('Начинаем загрузку...');
-    for (let i = 0; i < ASSETS_TO_LOAD.length; i++) {
-        await loadAsset(ASSETS_TO_LOAD[i]);
-        loadedCount++;
-        updateLoader(loadedCount / totalAssets);
+    const total = ASSETS.images.length + ASSETS.sounds.length;
+    let loaded = 0;
+
+    updateLoader(0, 'ЗАГРУЗКА ИЗОБРАЖЕНИЙ...');
+
+    // Загружаем изображения
+    for (const url of ASSETS.images) {
+        await loadAsset(url, 'image');
+        loaded++;
+        updateLoader(loaded / total, 'ЗАГРУЗКА ИЗОБРАЖЕНИЙ...');
     }
-    
+
+    updateLoader(loaded / total, 'ЗАГРУЗКА ЗВУКОВ...');
+
+    // Загружаем звуки
+    for (const url of ASSETS.sounds) {
+        await loadAsset(url, 'sound');
+        loaded++;
+        updateLoader(loaded / total, 'ЗАГРУЗКА ЗВУКОВ...');
+    }
+
+    // Минимальное время загрузки
     const elapsed = Date.now() - startTime;
     if (elapsed < MIN_LOAD_TIME) {
         const remaining = MIN_LOAD_TIME - elapsed;
         const steps = 20;
         const stepTime = remaining / steps;
         for (let i = 0; i <= steps; i++) {
-            const progress = loadedCount / totalAssets + (i / steps) * (1 - loadedCount / totalAssets);
-            updateLoader(progress);
+            const progress = loaded / total + (i / steps) * (1 - loaded / total);
+            updateLoader(progress, 'ФИНАЛИЗАЦИЯ...');
             await new Promise(r => setTimeout(r, stepTime));
         }
     }
-    
-    updateLoader(1);
-    console.log('Загрузка завершена!');
+
+    updateLoader(1, 'ГОТОВО!');
     await new Promise(r => setTimeout(r, 300));
-    document.getElementById('splashScreen').classList.add('hidden');
 }
 
 // ============================================================
-// 2. ЗАГРУЗКА ФОНА УРОВНЯ
-// ============================================================
-function loadLevelBackground(levelNum) {
-    return new Promise((resolve) => {
-        const bgEl = document.getElementById('levelBg');
-        const url = `assets/img/splash_level/level_${levelNum}.jpg`;
-        const fallbackUrl = 'assets/img/splash_level/level_1.jpg';
-        
-        // Проверяем кэш
-        if (levelBgCache[levelNum]) {
-            console.log(`Фон уровня ${levelNum} из кэша`);
-            bgEl.style.backgroundImage = `url(${levelBgCache[levelNum]})`;
-            bgEl.style.display = 'block';
-            resolve();
-            return;
-        }
-        
-        // Загружаем
-        const img = new Image();
-        img.onload = () => {
-            console.log(`Фон уровня ${levelNum} загружен`);
-            levelBgCache[levelNum] = url;
-            bgEl.style.backgroundImage = `url(${url})`;
-            bgEl.style.display = 'block';
-            resolve();
-        };
-        img.onerror = () => {
-            console.warn(`Фон уровня ${levelNum} не найден, используем level_1.jpg как fallback`);
-            // Используем level_1.jpg как fallback
-            if (levelBgCache['fallback']) {
-                bgEl.style.backgroundImage = `url(${levelBgCache['fallback']})`;
-                bgEl.style.display = 'block';
-                resolve();
-            } else {
-                const fallbackImg = new Image();
-                fallbackImg.onload = () => {
-                    levelBgCache['fallback'] = fallbackUrl;
-                    bgEl.style.backgroundImage = `url(${fallbackUrl})`;
-                    bgEl.style.display = 'block';
-                    resolve();
-                };
-                fallbackImg.onerror = () => {
-                    bgEl.style.display = 'none';
-                    resolve();
-                };
-                fallbackImg.src = fallbackUrl;
-            }
-        };
-        img.src = url;
-    });
-}
-
-// ============================================================
-// 3. ЗВУК
+// 2. ЗВУК
 // ============================================================
 const AC = window.AudioContext || window.webkitAudioContext;
 let actx = null;
@@ -381,7 +388,7 @@ function sndWall(){ tone(140,.06,'sine',.15); }
 function sndBuy(){ [660,880,1100].forEach((f,i)=>setTimeout(()=>tone(f,.1,'triangle',.25),i*60)); }
 
 // ============================================================
-// 4. СОСТОЯНИЕ
+// 3. СОСТОЯНИЕ
 // ============================================================
 let save = JSON.parse(localStorage.getItem('billiardSave')||'null') || {
   coins:0, level:1, maxLevel:1, cue:0, ball:0, ownedCues:[0], ownedBalls:[0]
@@ -410,7 +417,7 @@ const BALLS = [
 const TOTAL_LEVELS = 30;
 
 // ============================================================
-// 5. КАНВАС
+// 4. КАНВАС
 // ============================================================
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 let W,H, table, R;
@@ -428,7 +435,7 @@ window.addEventListener('resize', ()=>{ resize(); if(gameState==='playing') repo
 function repositionAll(){}
 
 // ============================================================
-// 6. ИГРОВЫЕ ОБЪЕКТЫ
+// 5. ИГРОВЫЕ ОБЪЕКТЫ
 // ============================================================
 let balls=[], pockets=[], gameState='menu', shooting=false;
 let cueBall=null;
@@ -439,7 +446,7 @@ let currentLimit=0;
 let currentTargetType = 'all';
 
 // ============================================================
-// 7. КОНФИГУРАЦИЯ УРОВНЕЙ
+// 6. КОНФИГУРАЦИЯ УРОВНЕЙ
 // ============================================================
 function getLevelConfig(lv){
   const colors = ['#e53935','#ffb300','#43a047','#1e88e5','#8e24aa','#00acc1','#f4511e','#ec407a','#26c6da','#7cb342'];
@@ -592,7 +599,7 @@ function getShapePositions(shape, count){
 }
 
 // ============================================================
-// 8. ФИЗИКА
+// 7. ФИЗИКА
 // ============================================================
 const FRICTION = 0.988, MINV = 0.05;
 function updatePhysics(){
@@ -753,17 +760,13 @@ function failLevel(){
 }
 
 // ============================================================
-// 9. ОТРИСОВКА
+// 8. ОТРИСОВКА
 // ============================================================
 function draw(){
   ctx.clearRect(0,0,W,H);
-  
-  // Только фон стола, без прозрачностей
-  if(gameState==='menu') {
-    ctx.fillStyle = '#0d2818';
-    ctx.fillRect(0, 0, W, H);
-    return;
-  }
+  const g=ctx.createRadialGradient(W/2,H/2,50,W/2,H/2,Math.max(W,H));
+  g.addColorStop(0,'#123'); g.addColorStop(1,'#020'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  if(gameState==='menu') return;
 
   const wall=table.wall;
   ctx.fillStyle='#5d3a1a';
@@ -773,8 +776,7 @@ function draw(){
   roundRect(table.x-wall*0.5,table.y-wall*0.5,table.w+wall,table.h+wall,wall*0.6);
   ctx.fill();
   const cg=ctx.createRadialGradient(table.x+table.w/2,table.y+table.h/2,20,table.x+table.w/2,table.y+table.h/2,table.h*0.7);
-  cg.addColorStop(0,'#1b7a3e');
-  cg.addColorStop(1,'#0d4a24');
+  cg.addColorStop(0,'#1b7a3e'); cg.addColorStop(1,'#0d4a24');
   ctx.fillStyle=cg;
   ctx.fillRect(table.x,table.y,table.w,table.h);
   
@@ -917,7 +919,7 @@ function drawCue(){
 }
 
 // ============================================================
-// 10. ИГРОВОЙ ЦИКЛ
+// 9. ИГРОВОЙ ЦИКЛ
 // ============================================================
 function loop(){
   if(gameState==='playing'){ updatePhysics(); }
@@ -930,7 +932,7 @@ function loop(){
 }
 
 // ============================================================
-// 11. УПРАВЛЕНИЕ
+// 10. УПРАВЛЕНИЕ
 // ============================================================
 function getPos(e){
   const t=e.touches?e.touches[0]:e;
@@ -982,7 +984,7 @@ cv.addEventListener('mousemove',onMove);
 cv.addEventListener('mouseup',onUp);
 
 // ============================================================
-// 12. HUD / UI
+// 11. HUD / UI
 // ============================================================
 function updateHud(){
   document.getElementById('lvlNum').textContent=level+'/'+TOTAL_LEVELS;
@@ -1004,10 +1006,8 @@ function showMsg(t){
   clearTimeout(msgTimer); msgTimer=setTimeout(()=>m.style.opacity=0,1200);
 }
 
-async function startLevel(lv){
+function startLevel(lv){
   resize();
-  // Загружаем фон для уровня
-  await loadLevelBackground(lv);
   setupLevel(lv);
   gameState='playing';
   ['mainMenu','shop','levelEnd','levelStart'].forEach(o=>document.getElementById(o).classList.add('hidden'));
@@ -1123,16 +1123,26 @@ function renderShop(){
 }
 
 // ============================================================
-// 13. ЗАПУСК
+// 12. ЗАПУСК
 // ============================================================
 async function initGame() {
+    // Показываем сплеш
+    document.getElementById('splashScreen').classList.remove('hidden');
+    
+    // Загружаем ассеты
     await loadAllAssets();
+    
+    // Скрываем сплеш
+    document.getElementById('splashScreen').classList.add('hidden');
+    
+    // Инициализируем игру
     resize();
     show('mainMenu');
     updateHud();
     loop();
 }
 
+// Запускаем игру
 initGame();
 </script>
 </body>
