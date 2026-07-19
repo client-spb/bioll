@@ -143,7 +143,7 @@ h1 { color:#ffd700; font-size:2.4em; text-shadow:0 3px 8px #000; margin-bottom:8
     position:fixed; inset:0; z-index:0;
     background-size:cover;
     background-position:center;
-    opacity:0.3;
+    opacity:0.4;
     pointer-events:none;
 }
 </style>
@@ -242,7 +242,6 @@ const ASSETS_TO_LOAD = [
 
 // Кэш фонов уровней
 const levelBgCache = {};
-let levelBgImage = null;
 
 let loadedCount = 0;
 const totalAssets = ASSETS_TO_LOAD.length;
@@ -310,6 +309,7 @@ function loadLevelBackground(levelNum) {
     return new Promise((resolve) => {
         const bgEl = document.getElementById('levelBg');
         const url = `assets/img/splash_level/level_${levelNum}.jpg`;
+        const fallbackUrl = 'assets/img/splash_level/level_1.jpg';
         
         // Проверяем кэш
         if (levelBgCache[levelNum]) {
@@ -330,16 +330,17 @@ function loadLevelBackground(levelNum) {
             resolve();
         };
         img.onerror = () => {
-            console.warn(`Фон уровня ${levelNum} не найден, используем splash.jpg`);
-            // Используем splash.jpg как fallback
+            console.warn(`Фон уровня ${levelNum} не найден, используем level_1.jpg как fallback`);
+            // Используем level_1.jpg как fallback
             if (levelBgCache['fallback']) {
                 bgEl.style.backgroundImage = `url(${levelBgCache['fallback']})`;
+                bgEl.style.display = 'block';
+                resolve();
             } else {
-                // Загружаем splash.jpg если еще не загружен
                 const fallbackImg = new Image();
                 fallbackImg.onload = () => {
-                    levelBgCache['fallback'] = 'assets/img/splash/splash.jpg';
-                    bgEl.style.backgroundImage = `url(assets/img/splash/splash.jpg)`;
+                    levelBgCache['fallback'] = fallbackUrl;
+                    bgEl.style.backgroundImage = `url(${fallbackUrl})`;
                     bgEl.style.display = 'block';
                     resolve();
                 };
@@ -347,7 +348,7 @@ function loadLevelBackground(levelNum) {
                     bgEl.style.display = 'none';
                     resolve();
                 };
-                fallbackImg.src = 'assets/img/splash/splash.jpg';
+                fallbackImg.src = fallbackUrl;
             }
         };
         img.src = url;
@@ -757,12 +758,8 @@ function failLevel(){
 function draw(){
   ctx.clearRect(0,0,W,H);
   
-  // Рисуем фон стола (прозрачный, чтобы был виден фон уровня)
-  ctx.fillStyle = 'rgba(13, 40, 24, 0.6)';
-  ctx.fillRect(0, 0, W, H);
-  
+  // Только фон стола, без прозрачностей
   if(gameState==='menu') {
-    // В меню показываем темный фон
     ctx.fillStyle = '#0d2818';
     ctx.fillRect(0, 0, W, H);
     return;
@@ -776,8 +773,8 @@ function draw(){
   roundRect(table.x-wall*0.5,table.y-wall*0.5,table.w+wall,table.h+wall,wall*0.6);
   ctx.fill();
   const cg=ctx.createRadialGradient(table.x+table.w/2,table.y+table.h/2,20,table.x+table.w/2,table.y+table.h/2,table.h*0.7);
-  cg.addColorStop(0,'rgba(27, 122, 62, 0.7)'); 
-  cg.addColorStop(1,'rgba(13, 74, 36, 0.8)');
+  cg.addColorStop(0,'#1b7a3e');
+  cg.addColorStop(1,'#0d4a24');
   ctx.fillStyle=cg;
   ctx.fillRect(table.x,table.y,table.w,table.h);
   
