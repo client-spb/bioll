@@ -1,0 +1,16 @@
+# Зависимости
+node_modules/
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Редактор/IDE
+.vscode/
+.idea/
+.gigacode/
+
+# Временные файлы
+*.log
+*.tmp

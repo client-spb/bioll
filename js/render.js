@@ -539,5 +539,5 @@ window.Render = (function(){
     ctx.restore();
   }
 
-  return { init, resize, setTable, setState, draw, _lighten:lighten, _darken:darken, _roundRect:roundRect };
+  return { init, resize, setTable, setState, draw, _lighten:lighten };
 })();

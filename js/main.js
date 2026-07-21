@@ -55,7 +55,7 @@ window.Game = (function(){
     Render.setTable(table, R);
     Render.resize(W, H);
     Physics.configure(table, R, {
-      onWallHit: (intensity) => { Audio2.wall(Math.min(1, intensity/8)); FX.shake(intensity*0.4); },
+      onWallHit: (intensity) => { Audio2.wall(Math.min(1, intensity/8)); },
       onBallHit: (intensity, x, y, color) => {
         Audio2.clack(Math.min(1, intensity/6));
         FX.ring(x, y, color || '#fff', R*1.2);
@@ -161,7 +161,6 @@ window.Game = (function(){
     if(b.cue){
       Audio2.fail();
       FX.flash('#ff5b6e', 0.4);
-      FX.shake(15);
       FX.burst(b.x, b.y, 25, '#ff5b6e', { speed:6, life:1.2 });
       UI.toast('Белый в лузе!', 'error');
       setTimeout(() => failLevel('Белый шар в лузе!'), 500);
@@ -175,7 +174,6 @@ window.Game = (function(){
     FX.stars(b.x, b.y, 8, isTarget ? '#ffd24a' : '#888');
     FX.burst(b.x, b.y, 18, b.color, { speed:5, life:1 });
     FX.flash(isTarget ? '#ffd24a' : '#666', isTarget ? 0.25 : 0.1);
-    FX.shake(isTarget ? 6 : 3);
 
     if(isTarget){
       Audio2.pot();
@@ -285,6 +283,7 @@ window.Game = (function(){
     if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
     Audio2.fail();
     FX.flash('#ff5b6e', 0.3);
+    FX.shake(15);
     nextIsMenu = false;
     nextIsRetry = true;
     UI.showLevelEnd({
@@ -395,7 +394,6 @@ window.Game = (function(){
     shots++;
     combo = 0; // новый удар — комбо сбрасывается (будет расти при забивании)
     Audio2.hit(power / (table.h*0.4));
-    FX.shake(power * 0.05);
     updateHud();
     e.preventDefault();
   }
@@ -571,14 +569,7 @@ window.Game = (function(){
     requestAnimationFrame(loop);
   }
 
-  return { init, onSkinChanged, startLevel, showLevelStart,
-    // Тестовый доступ (не используется в продакшене)
-    _debug: () => ({
-      gameState, level, targetsLeft, totalTargets, shots, shotLimit,
-      timeRemaining, combo, balls: balls.map(b => ({x:b.x,y:b.y,cue:b.cue,active:b.active,isTarget:b.isTarget,type:b.type})),
-      table, R
-    })
-  };
+  return { init, onSkinChanged, startLevel, showLevelStart };
 })();
 
 // Запуск
