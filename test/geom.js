@@ -11,7 +11,7 @@ setTimeout(async()=>{
     await send('Page.navigate',{url:'http://localhost:8765/index.html'});
     await new Promise(r=>setTimeout(r,5000));
     const res=await send('Runtime.evaluate',{expression:`JSON.stringify({innerW:window.innerWidth,innerH:window.innerHeight,dpr:window.devicePixelRatio,cvAttrW:document.getElementById('cv').width,cvAttrH:document.getElementById('cv').height,cvCssW:document.getElementById('cv').clientWidth,cvCssH:document.getElementById('cv').clientHeight})`,returnByValue:true});
-    console.log('GEOM:', res.result.result.value);
+    console.log('FULL:', JSON.stringify(res).slice(0,400));
   }catch(e){ console.error('ERR',e.message); }
   chrome.kill();process.exit(0);
 },2500);
