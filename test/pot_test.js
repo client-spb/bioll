@@ -73,43 +73,35 @@ if(!fs.existsSync(OUT)) fs.mkdirSync(OUT, { recursive:true });
   const targets = d.balls.filter(b => !b.cue && b.active);
 
   function pickShot(){
+    // Геометрия «ghost ball»: чтобы отправить цель в лузу P,
+    // биток должен коснуться цели со стороны, противоположной P.
+    // Точка касания центра битка = цель - 2R * (направление от цели к лузе).
+    // Направление удара = от битка к точке касания.
     for(const t of targets){
-      // ищем лузу, к которой путь «цель → луза» свободен (по возможности)
-      let bestPocket = null, bestScore = Infinity;
       for(const p of pockets){
-        const dx = p.x - t.x, dy = p.y - t.y;
-        const distPL = Math.hypot(dx, dy);
-        if(distPL < 1) continue;
-        // Точка контакта битка: цель минус сумма радиусов вдоль нормали от цели к лузе
-        const nx = dx/distPL, ny = dy/distPL;
-        const contactX = t.x - nx * 2 * R; // биток должен коснуться цели со стороны, противоположной лузе
-        const contactY = t.y - ny * 2 * R;
-        // Нужно, чтобы биток был способен дойти до contactX,contactY по прямой.
-        const cueDx = contactX - cue.x, cueDy = contactY - cue.y;
-        const cueDist = Math.hypot(cueDx, cueDy);
+        const ddx = p.x - t.x, ddy = p.y - t.y;
+        const distPL = Math.hypot(ddx, ddy);
+        if(distPL < 2*R) continue;
+        const nx = ddx/distPL, ny = ddy/distPL;   // нормаль цель→луза
+        const ghostX = t.x - nx * 2 * R;
+        const ghostY = t.y - ny * 2 * R;
+        // Направление удара = от битка к ghost
+        const cdx = ghostX - cue.x, cdy = ghostY - cue.y;
+        const cueDist = Math.hypot(cdx, cdy);
         if(cueDist < 1) continue;
-        // угол cue→contact должен совпадать с углом cue→target (иначе будет «касса»)
-        const angCue = Math.atan2(cueDy, cueDx);
-        const angTarget = Math.atan2(t.y - cue.y, t.x - cue.x);
-        let dAng = Math.abs(angCue - angTarget);
-        while(dAng > Math.PI) dAng = Math.abs(dAng - 2*Math.PI);
-        // preferring shots where cue, target, pocket are roughly aligned
-        const score = dAng + distPL * 0.001;
-        if(score < bestScore){ bestScore = score; bestPocket = { p, t, contactX, contactY, angCue, distPL }; }
+        const angCue = Math.atan2(cdy, cdx);
+        // Проверка: после столкновения (упругое, равные массы) цель получит
+        // скорость вдоль нормали nx,ny — то есть полетит к лузе. Это и есть критерий.
+        return { p, t, angCue, ghostX, ghostY, distPL };
       }
-      if(bestPocket && bestScore < 0.35) return bestPocket; // достаточно «прямой» удар
     }
-    // если прямого нет — берём первый таргет и ближайшую лузу
-    const t = targets[0];
-    let best = null, bd = Infinity;
-    for(const p of pockets){
-      const dd = Math.hypot(p.x - t.x, p.y - t.y);
-      if(dd < bd){ bd = dd; best = { p, t, contactX:t.x, contactY:t.y, angCue:Math.atan2(t.y-cue.y,t.x-cue.x), distPL:dd }; }
-    }
-    return best;
+    return null;
   }
 
   const shot = pickShot();
+  if(!shot){
+    console.log('NO SHOT AVAILABLE'); chrome.kill(); process.exit(2);
+  }
   console.log('SHOT target at', shot.t.x.toFixed(0), shot.t.y.toFixed(0),
               '-> pocket', shot.p.name, '(', shot.p.x.toFixed(0), shot.p.y.toFixed(0), ')',
               'ang', shot.angCue.toFixed(3));
@@ -126,6 +118,13 @@ if(!fs.existsSync(OUT)) fs.mkdirSync(OUT, { recursive:true });
   await send('Input.dispatchMouseEvent', { type:'mouseMoved', x:pullX, y:pullY, button:'left' });
   await wait(180);
   await send('Input.dispatchMouseEvent', { type:'mouseReleased', x:pullX, y:pullY, button:'left', clickCount:1 });
+
+  // Сразу после удара — проверим, что у битка появилась скорость в правильном направлении
+  await wait(60);
+  let dbgMid = await evalJS(`JSON.stringify(window.Game._debug())`);
+  let dMid = JSON.parse(dbgMid.result.result.value);
+  console.log('MID (60ms after):', dMid.balls.map(b=>`(${b.cue?'cue':'tgt'} ${b.x.toFixed(0)},${b.y.toFixed(0)} active=${b.active})`).join(' | '));
+
   await wait(3500);
 
   let dbg2 = await evalJS(`JSON.stringify(window.Game._debug())`);
