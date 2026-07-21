@@ -35,16 +35,19 @@ window.Game = (function(){
   function resize(){
     W = cv.width = window.innerWidth;
     H = cv.height = window.innerHeight;
-    const margin = 20;
-    const topReserve = 90;
-    const bottomReserve = 70;
+    const margin = 16;
+    // Резервируем место под HUD сверху и под шкалу силы/подсказку снизу.
+    // safe-area учитывается через env() в CSS, здесь берём с запасом.
+    const safeTop = Math.max(8, parseInt(getComputedStyle(document.documentElement).getPropertyValue('sat'))||0);
+    const topReserve = 78 + safeTop;   // HUD занимает ~70px + отступ
+    const bottomReserve = 64;          // шкала силы + подсказка
     const availW = W - margin*2;
     const availH = H - topReserve - bottomReserve;
     let tw = availW, th = tw*2;
     if(th > availH){ th = availH; tw = th/2; }
     table = {
-      x: (W - tw)/2,
-      y: topReserve + (availH - th)/2,
+      x: Math.round((W - tw)/2),
+      y: Math.round(topReserve + (availH - th)/2),
       w: tw, h: th,
       wall: Math.max(14, tw*0.05)
     };
