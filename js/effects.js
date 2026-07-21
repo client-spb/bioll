@@ -184,13 +184,12 @@ window.FX = (function(){
     ctx.closePath();
   }
 
-  function applyShake(ctx){ ctx.translate(shakeX, shakeY); }
   function getShake(){ return { x:shakeX, y:shakeY }; }
 
   return {
     burst, ring, stars, dust,
     addTrail, clearTrails, removeTrail, drawTrails,
     shake, flash, update, drawParticles, drawFlash,
-    applyShake, getShake, setR, drawStarShape
+    getShake, setR, drawStarShape
   };
 })();
