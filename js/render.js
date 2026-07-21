@@ -13,6 +13,7 @@ window.Render = (function(){
   let aiming = false, aimStart = null, aimCur = null;
   let balls = [], pockets = [], obstacles = [];
   let bgGradient = null;
+  let targetType = 'all';
 
   function init(canvasEl){
     canvas = canvasEl; ctx = canvas.getContext('2d');
@@ -38,6 +39,7 @@ window.Render = (function(){
     aiming = state.aiming;
     aimStart = state.aimStart;
     aimCur = state.aimCur;
+    targetType = state.targetType || 'all';
   }
 
   // ---- Утилиты цвета ----

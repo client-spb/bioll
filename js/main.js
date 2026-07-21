@@ -302,7 +302,7 @@ window.Game = (function(){
   function currentHudState(){
     return {
       level, targetsLeft, totalTargets, shots, shotLimit,
-      timeLimit, timeRemaining, combo
+      timeLimit, timeRemaining, combo, targetType: currentTargetType
     };
   }
   function updateHud(){ UI.updateHud(currentHudState()); }
@@ -342,7 +342,8 @@ window.Game = (function(){
       cueConfig: GameConfig.CUES[save.cue],
       ballSkin: GameConfig.BALLS[save.ball],
       cloth: GameConfig.CLOTHS[save.cloth],
-      aiming, aimStart, aimCur
+      aiming, aimStart, aimCur,
+      targetType: currentTargetType
     });
     Render.draw(gameState, cueBall, shooting);
 

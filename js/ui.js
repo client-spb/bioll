@@ -72,6 +72,24 @@ window.UI = (function(){
     } else {
       $('comboBadge').classList.remove('active');
     }
+
+    // Индикатор типа цели
+    const ttBadge = $('targetTypeBadge');
+    if(ttBadge){
+      if(state.targetType && state.targetType !== 'all'){
+        ttBadge.classList.remove('hidden');
+        const icon = $('ttIcon');
+        if(state.targetType === 'striped'){
+          icon.className = 'tt-icon striped';
+          $('ttText').textContent = 'Полосатые';
+        } else {
+          icon.className = 'tt-icon';
+          $('ttText').textContent = 'Сплошные';
+        }
+      } else {
+        ttBadge.classList.add('hidden');
+      }
+    }
   }
 
   // ---- Тост ----
@@ -115,7 +133,7 @@ window.UI = (function(){
       t.classList.toggle('active', t.dataset.tab === shopTab);
     });
     renderShop();
-    updateHud({ level:0, targetsLeft:0, shots:0, shotLimit:0, timeLimit:0, combo:1 });
+    updateHud({ level:0, targetsLeft:0, shots:0, shotLimit:0, timeLimit:0, combo:1, targetType:'all' });
   }
 
   function renderShop(){

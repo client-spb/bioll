@@ -58,6 +58,15 @@ canvas{display:block}
   display:inline-block;width:1em;height:1em;border-radius:50%;flex-shrink:0;
   background:radial-gradient(circle at 32% 28%,#fff 0%,#e2e2e2 30%,#7a7a7a 75%,#2a2a2a 100%);
   box-shadow:inset -2px -2px 3px rgba(0,0,0,.5),0 0 4px rgba(255,255,255,.2)}
+
+/* Индикатор типа цели в HUD */
+.target-type{border-color:rgba(255,210,74,.35)!important;color:#ffd24a}
+.target-type .tt-icon{width:1em;height:1em;border-radius:50%;display:inline-block;flex-shrink:0;
+  background:radial-gradient(circle at 32% 28%,#fff,#e53935 60%,#7a0000);
+  box-shadow:inset -2px -2px 3px rgba(0,0,0,.5)}
+.target-type .tt-icon.striped{
+  background:linear-gradient(180deg,#fff 0%,#fff 30%,#e53935 30%,#e53935 70%,#fff 70%,#fff 100%),
+             radial-gradient(circle at 32% 28%,#fff,#ccc)}
 .star-mini,.star{
   display:inline-block;width:1em;height:1em;flex-shrink:0;
   background:#ffd24a;

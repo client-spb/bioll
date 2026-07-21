@@ -49,13 +49,17 @@ window.Levels = (function(){
       shape: 'triangle'
     };
 
-    // Тип цели — разнообразие
-    const r = lv % 7;
-    if(r === 0) cfg.targetType = 'striped';
-    else if(r === 1) cfg.targetType = 'solid';
-    else if(r === 2) cfg.targetType = 'striped';
-    else if(r === 3) cfg.targetType = 'solid';
-    else cfg.targetType = 'all';
+    // Тип цели — разнообразие (первые 5 уровней обучающие: "все шары")
+    if(lv <= 5){
+      cfg.targetType = 'all';
+    } else {
+      const r = lv % 7;
+      if(r === 0) cfg.targetType = 'striped';
+      else if(r === 1) cfg.targetType = 'solid';
+      else if(r === 2) cfg.targetType = 'striped';
+      else if(r === 3) cfg.targetType = 'solid';
+      else cfg.targetType = 'all';
+    }
 
     // Форма расстановки
     const shapes = ['triangle','diamond','line','square','cluster'];
