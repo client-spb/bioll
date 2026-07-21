@@ -95,19 +95,33 @@ window.Physics = (function(){
     }
 
     // 4) Лузы
+    // Логика:
+    //  - если центр шара достаточно глубоко внутри лузы (dist < potR) — шар забит;
+    //  - иначе, если шар в зоне «горлышка» лузы (potR <= dist < catchR),
+    //    отключаем отскок от борта в районе этой лузы и заметно подтягиваем
+    //    шар к центру, чтобы он реально «провалился», а не пролетел мимо.
     for(const b of balls){
       if(!b.active) continue;
       for(const p of pockets){
         const dist = Math.hypot(b.x - p.x, b.y - p.y);
-        // "Затягивание" в лузу — лёгкое магнитное притяжение у края
-        if(dist < p.r * 0.9 && dist > 0.001){
-          // уже в лузе
-          if(dist < p.r * 0.6){ onPot(b); break; }
-          else {
-            // подтягиваем к центру лузы
-            const k = 0.15;
-            b.vx += (p.x - b.x) * k * 0.05;
-            b.vy += (p.y - b.y) * k * 0.05;
+        const potR = p.r * 0.7;    // радиус «забития»: центр шара внутри → pot
+        const catchR = p.r * 1.05; // радиус «горлышка»: зона притяжения
+        if(dist < catchR){
+          if(dist < potR){ onPot(b); break; }
+          // Заметное затягивание к центру лузы.
+          // Чем ближе к центру — тем сильнее, чтобы шар не выскочил обратно.
+          const t = 1 - dist / catchR;          // 0 .. 1
+          const pull = 0.35 + 0.9 * t;          // 0.35 .. 1.25
+          b.vx += (p.x - b.x) * pull * 0.02;
+          b.vy += (p.y - b.y) * pull * 0.02;
+          // Гасим боковую (касательную) составляющую, чтобы шар
+          // входил в лузу, а не проезжал мимо неё.
+          if(dist > 0.001){
+            const nx = (p.x - b.x) / dist, ny = (p.y - b.y) / dist;
+            const tx = -ny, ty = nx;
+            const tan = b.vx * tx + b.vy * ty;
+            b.vx -= tx * tan * 0.6;
+            b.vy -= ty * tan * 0.6;
           }
         }
       }
