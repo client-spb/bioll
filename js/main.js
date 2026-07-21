@@ -344,7 +344,7 @@ window.Game = (function(){
       aiming, aimStart, aimCur,
       targetType: currentTargetType
     });
-    Render.draw(gameState, cueBall, shooting);
+    Render.draw(gameState, cueBall, shooting, anyMoving());
 
     requestAnimationFrame(loop);
   }

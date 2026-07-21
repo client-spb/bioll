@@ -14,6 +14,9 @@ window.Render = (function(){
   let balls = [], pockets = [], obstacles = [];
   let bgGradient = null;
   let targetType = 'all';
+  // Последний угол прицеливания — нужен, чтобы показывать кий
+  // в покое (когда шары не двигаются, но палец ещё не на экране).
+  let lastCueAngle = null;
 
   function init(canvasEl){
     canvas = canvasEl; ctx = canvas.getContext('2d');
@@ -40,6 +43,11 @@ window.Render = (function(){
     aimStart = state.aimStart;
     aimCur = state.aimCur;
     targetType = state.targetType || 'all';
+    // Запоминаем последний угол прицеливания — пригодится для покоящегося кия.
+    if(aiming && aimStart && aimCur){
+      const dx = aimStart.x - aimCur.x, dy = aimStart.y - aimCur.y;
+      if(dx*dx + dy*dy > 25) lastCueAngle = Math.atan2(dy, dx);
+    }
   }
 
   // ---- Утилиты цвета ----
@@ -86,7 +94,7 @@ window.Render = (function(){
   }
 
   // ============ ОСНОВНОЙ Кадр ============
-  function draw(gameState, cueBall, shooting){
+  function draw(gameState, cueBall, shooting, anyMoving){
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, W, H);
 
@@ -116,16 +124,19 @@ window.Render = (function(){
     // Трейлы под шарами
     FX.drawTrails(ctx);
 
+    // Показываем прицел/кий только когда шары неподвижны.
+    const cueReady = cueBall && cueBall.active && !shooting && !anyMoving;
+
     // Прицел
-    if(aiming && aimStart && aimCur && cueBall && cueBall.active && !shooting){
+    if(cueReady && aiming && aimStart && aimCur){
       drawAim(cueBall);
     }
 
     // Шары
     for(const b of balls){ if(b.active) drawBall(b); }
 
-    // Кий поверх шаров (если прицеливаемся)
-    if(aiming && aimStart && aimCur && cueBall && cueBall.active && !shooting){
+    // Кий поверх шаров: виден всегда, когда шары стоят (в прицеле или в покое).
+    if(cueReady){
       drawCue(cueBall);
     }
 
@@ -293,19 +304,6 @@ window.Render = (function(){
     const skin = b.cue ? ballSkin : { color:b.color, glow:b.glow, stripe:b.stripe };
     const baseColor = skin.color;
     const glow = skin.glow || lighten(baseColor, 40);
-
-    // Подсветка целевого шара (если этот тип — цель)
-    const isCurrentTarget = !b.cue && b.isTarget && (targetType === 'all' || b.type === targetType);
-    if(isCurrentTarget){
-      const pulse = 0.5 + 0.5*Math.sin(performance.now()/350);
-      ctx.save();
-      ctx.globalAlpha = 0.25 + pulse*0.25;
-      ctx.fillStyle = '#ffd24a';
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, b.r * (1.25 + pulse*0.15), 0, Math.PI*2);
-      ctx.fill();
-      ctx.restore();
-    }
 
     ctx.save();
     // Тень
@@ -481,11 +479,21 @@ window.Render = (function(){
 
   // ============ КИЙ ============
   function drawCue(cueBall){
-    const dx = aimStart.x - aimCur.x, dy = aimStart.y - aimCur.y;
-    const ang = Math.atan2(dy, dx);
-    const dist = Math.hypot(dx, dy);
-    const power = Math.min(dist, table.h*0.4);
-    const back = R*2.2 + power*0.45;
+    // Направление: либо от оттянутого пальца (при прицеливании), либо последнее известное.
+    let ang, dist = 0, power = 0;
+    if(aiming && aimStart && aimCur){
+      const dx = aimStart.x - aimCur.x, dy = aimStart.y - aimCur.y;
+      ang = Math.atan2(dy, dx);
+      dist = Math.hypot(dx, dy);
+      power = Math.min(dist, table.h*0.4);
+    } else if(lastCueAngle !== null){
+      ang = lastCueAngle;
+    } else {
+      // Пока ни разу не прицеливались — показываем кий со стороны игрока (снизу).
+      ang = Math.PI / 2;
+    }
+    // Кий прижат вплотную к битку: небольшой зазор, чтобы не тонул в шаре.
+    const back = R + R*0.35 + power*0.45;
     const cueLen = table.h*0.42;
     const cueW = Math.max(3, R*0.5);
 
