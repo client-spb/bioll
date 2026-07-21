@@ -9,11 +9,13 @@ window.GameConfig = {
   // aimLen:    длина линии прицела в долях высоты стола (для "line")
   // aimMode:   'line' | 'circle' | 'reflect'
   // reflectLen: длина линии отражения (доли высоты стола)
+  // Сила удара строго растёт от первого (стартового) кия к топовому.
+  // power: множитель скорости битка (1.0 = базовая).
   CUES: [
     {
       name: 'Классик',
       price: 0,
-      power: 1.0,
+      power: 1.00,   // самый слабый — стартовый
       aimMode: 'line',
       aimLen: 0.22,
       reflectLen: 0,
@@ -39,7 +41,7 @@ window.GameConfig = {
     {
       name: 'Карбон',
       price: 400,
-      power: 1.08,
+      power: 1.25,
       aimMode: 'line',
       aimLen: 1.6,
       reflectLen: 0,
@@ -52,7 +54,7 @@ window.GameConfig = {
     {
       name: 'Снайпер',
       price: 800,
-      power: 1.18,
+      power: 1.40,
       aimMode: 'circle',
       aimLen: 1.6,
       reflectLen: 0,
@@ -65,7 +67,7 @@ window.GameConfig = {
     {
       name: 'Титан',
       price: 1500,
-      power: 1.30,
+      power: 1.55,
       aimMode: 'reflect',
       aimLen: 1.6,
       reflectLen: 0.28,
@@ -78,7 +80,7 @@ window.GameConfig = {
     {
       name: 'Дракон',
       price: 2500,
-      power: 1.40,
+      power: 1.72,
       aimMode: 'reflect',
       aimLen: 1.6,
       reflectLen: 0.7,
@@ -91,7 +93,7 @@ window.GameConfig = {
     {
       name: 'Легенда',
       price: 4000,
-      power: 1.55,
+      power: 1.90,
       aimMode: 'reflect',
       aimLen: 1.6,
       reflectLen: 1.6,
@@ -168,14 +170,17 @@ window.GameConfig = {
   ],
 
   // ---- НАБОРЫ ШАРОВ ----
+  // pattern: имя процедуры из BallArt для нанесения рисунка на биток.
+  //         null/undefined — обычный гладкий шар без рисунка.
+  //         Чем дороже набор — тем сложнее и «богаче» узор.
   BALLS: [
-    { name: 'Классика',   price: 0,    color: '#f5f5f5', glow: '#fff',    stripe: '#e53935', desc: 'Стандартные шары из полированного фенола.' },
-    { name: 'Золото',     price: 120,  color: '#ffd24a', glow: '#fff7c8', stripe: '#c98c00', desc: 'Позолоченные шары. Блестят и звенят при ударе.' },
-    { name: 'Неон',       price: 300,  color: '#00e5ff', glow: '#7be0ff', stripe: '#0099b3', desc: 'Светящиеся неоновые шары для тёмных столов.' },
-    { name: 'Огонь',      price: 600,  color: '#ff5722', glow: '#ff9a3a', stripe: '#b23a14', desc: 'Раскалённые шары с оранжевым ореолом.' },
-    { name: 'Алмаз',      price: 1200, color: '#e0f7fa', glow: '#80ffff', stripe: '#26c6da', desc: 'Прозрачные, как лёд, с морозным сиянием.' },
-    { name: 'Космос',     price: 2500, color: '#9c27b0', glow: '#e040fb', stripe: '#4a148c', desc: 'Галактический перелив с туманным свечением.' },
-    { name: 'Жидкий металл', price: 4000, color: '#c0c0c0', glow: '#fff', stripe: '#606060', desc: 'Хромированная ртуть. Переливается при движении.' }
+    { name: 'Классика',   price: 0,    color: '#f5f5f5', glow: '#fff',    stripe: '#e53935', pattern: null,        desc: 'Стандартные шары из полированного фенола.' },
+    { name: 'Золото',     price: 120,  color: '#ffd24a', glow: '#fff7c8', stripe: '#c98c00', pattern: null,        desc: 'Позолоченные шары. Блестят и звенят при ударе.' },
+    { name: 'Неон',       price: 300,  color: '#00e5ff', glow: '#7be0ff', stripe: '#0099b3', pattern: 'dots',      desc: 'Светящиеся неоновые шары с точечным свечением.' },
+    { name: 'Огонь',      price: 600,  color: '#ff5722', glow: '#ff9a3a', stripe: '#b23a14', pattern: 'flames',    desc: 'Раскалённые шары с оранжевым ореолом и языками пламени.' },
+    { name: 'Алмаз',      price: 1200, color: '#e0f7fa', glow: '#80ffff', stripe: '#26c6da', pattern: 'snowflake', desc: 'Прозрачные, как лёд, с морозным снежным узором.' },
+    { name: 'Космос',     price: 2500, color: '#9c27b0', glow: '#e040fb', stripe: '#4a148c', pattern: 'galaxy',    desc: 'Галактический перелив с туманностью и звёздами.' },
+    { name: 'Жидкий металл', price: 4000, color: '#c0c0c0', glow: '#fff', stripe: '#606060', pattern: 'mercury',   desc: 'Хромированная ртуть с зеркальными разводами.' }
   ],
 
   TOTAL_LEVELS: 100,

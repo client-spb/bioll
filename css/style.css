@@ -225,41 +225,84 @@ h1 .accent{font-size:.6em;letter-spacing:6px;display:block;margin-top:4px}
 .start-goal .goal-line .gl-ic{width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .start-goal b{color:var(--gold)}
 
-/* ============ МАГАЗИН ============ */
-.shop-content{position:relative;z-index:2;height:100%;max-height:100vh;padding:18px 0}
+/* ============ МАГАЗИН ============
+   Перепроектированная вёрстка:
+   - колонка flex: заголовок + монеты + табы + скролл-список + кнопка «Назад»;
+   - список реально скроллится (touch-action:pan-y, flex:1, min-height:0);
+   - описания не обрезаются — карточки растут по высоте под контент. */
+#shop.overlay{align-items:stretch;justify-content:stretch;padding:0}
+.shop-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;
+  width:100%;max-width:480px;height:100%;max-height:100%;
+  margin:0 auto;
+  padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom));
+  gap:8px;
+}
+.shop-content .panel-title{margin:2px 0 2px}
+
 .shop-coins{display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,.5);padding:8px 18px;
-  border-radius:30px;color:var(--gold);font-weight:800;font-size:1.1em;margin-bottom:10px;
-  border:1px solid rgba(255,210,74,.3)}
-.tabs{display:flex;gap:8px;margin:8px 0 14px}
-.tab{display:flex;align-items:center;gap:7px;padding:10px 18px;border-radius:20px;
+  border-radius:30px;color:var(--gold);font-weight:800;font-size:1.1em;
+  border:1px solid rgba(255,210,74,.3);flex-shrink:0}
+
+.tabs{display:flex;gap:8px;flex-shrink:0;justify-content:center}
+.tab{display:flex;align-items:center;gap:7px;padding:10px 16px;border-radius:20px;
   background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;font-weight:700;
   border:1px solid rgba(255,255,255,.08);transition:all .15s;font-size:.95em}
 .tab .ic{font-size:1.1em}
 .tab.active{background:linear-gradient(145deg,#ffd24a,#e6a800);color:#3a2a00;border-color:transparent;
   box-shadow:0 4px 12px rgba(255,210,74,.4)}
-.scroll{width:100%;max-width:440px;overflow-y:auto;max-height:52vh;display:flex;flex-direction:column;
-  align-items:center;padding:4px 8px;scrollbar-width:thin;scrollbar-color:rgba(255,210,74,.4) transparent}
+
+/* Скролл-зона: занимает всё оставшееся место и нормально скроллится тачем */
+.scroll{
+  width:100%;flex:1 1 auto;min-height:0;
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;             /* важно: html,body => touch-action:none убивает тач-скролл */
+  display:flex;flex-direction:column;align-items:center;
+  padding:2px 6px 8px;
+  scrollbar-width:thin;scrollbar-color:rgba(255,210,74,.4) transparent;
+}
 .scroll::-webkit-scrollbar{width:6px}
 .scroll::-webkit-scrollbar-thumb{background:rgba(255,210,74,.4);border-radius:3px}
+.scroll::-webkit-scrollbar-track{background:transparent}
 
-.shopItem{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;
-  padding:12px 14px;margin-bottom:8px;width:100%;max-width:420px;display:flex;align-items:center;gap:14px;
-  color:var(--text);transition:all .15s;position:relative;overflow:hidden}
+/* Карточка товара: адаптивная, описание видно целиком */
+.shopItem{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;
+  padding:12px 14px;margin-bottom:10px;width:100%;max-width:440px;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  grid-template-rows:auto auto;
+  grid-template-areas:
+    "prev name  buy"
+    "prev info  buy";
+  column-gap:14px;row-gap:2px;align-items:center;
+  color:var(--text);transition:border-color .15s,background .15s;position:relative;
+}
 .shopItem.selected{border-color:rgba(46,204,113,.6);background:rgba(46,204,113,.1);
   box-shadow:0 0 20px rgba(46,204,113,.15)}
 .shopItem.locked{opacity:.65}
-.shopItem .prev{width:60px;height:60px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+
+.shopItem .prev{grid-area:prev;width:64px;height:64px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
   border-radius:12px;background:rgba(0,0,0,.3);overflow:hidden;position:relative}
-.shopItem .cinfo{flex:1;text-align:left;min-width:0}
-.shopItem .cinfo b{font-size:1.05em;display:block;margin-bottom:3px}
-.shopItem .cinfo .desc{color:var(--text-dim);font-size:.78em;line-height:1.35;margin-bottom:5px}
-.shopItem .cinfo .stats{display:flex;gap:8px;flex-wrap:wrap}
-.shopItem .stat-chip{font-size:.72em;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.08);
+.shopItem .cinfo{grid-area:info;min-width:0}
+.shopItem .cname{grid-area:name;text-align:left;font-size:1.05em;font-weight:800;
+  display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.shopItem .cname b{font-size:1.05em}
+/* Описание больше не обрезается: word-wrap + перенос, без line-clamp/overflow:hidden */
+.shopItem .desc{color:var(--text-dim);font-size:.82em;line-height:1.4;margin-top:4px;
+  white-space:normal;word-wrap:break-word;overflow-wrap:anywhere}
+.shopItem .stats{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.shopItem .stat-chip{font-size:.72em;padding:3px 9px;border-radius:10px;background:rgba(255,255,255,.08);
   color:#cfeede;white-space:nowrap}
 .shopItem .stat-chip.power{color:#ff9a8a;background:rgba(255,91,110,.15)}
 .shopItem .stat-chip.aim{color:#8acfff;background:rgba(58,160,255,.15)}
-.buyb{border:none;padding:10px 16px;border-radius:12px;font-weight:800;cursor:pointer;font-size:.9em;
-  min-width:78px;display:inline-flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;
+.shopItem .buyb{grid-area:buy;align-self:center}
+
+.buyb{border:none;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;font-size:.9em;
+  min-width:84px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;
   transition:transform .08s;font-family:inherit}
 .buyb:active{transform:scale(.93)}
 .buyb .ic-coin{font-size:1em}
@@ -279,9 +322,11 @@ h1 .accent{font-size:.6em;letter-spacing:6px;display:block;margin-top:4px}
 .prev-cloth{width:100%;height:100%;border-radius:8px;position:relative;overflow:hidden;border:3px solid #5d3a1a}
 .prev-cloth .inner{position:absolute;inset:3px;border-radius:3px}
 
-/* Превью для шара */
-.prev-ball{width:42px;height:42px;border-radius:50%;margin:auto;
+/* Превью для шара (без узора — CSS-градиент) */
+.prev-ball{width:46px;height:46px;border-radius:50%;margin:auto;
   box-shadow:inset -6px -6px 12px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.4)}
+/* Превью для шара с узором — canvas растягивается на ячейку */
+.prev-ball.canvas{width:100%;height:100%;padding:4px;background:transparent;box-shadow:none;margin:0}
 
 /* ============ ТОСТЫ ============ */
 #toast{position:fixed;top:35%;left:50%;transform:translate(-50%,-50%) scale(.9);
@@ -328,8 +373,9 @@ h1 .accent{font-size:.6em;letter-spacing:6px;display:block;margin-top:4px}
   .hud-stats{gap:4px}
 }
 @media(max-height:560px){
-  .scroll{max-height:38vh}
   .menu-logo{margin-bottom:10px}
   .logo-ball{width:70px;height:70px}
   .splash-ball{width:70px;height:70px}
+  .shopItem{padding:10px 12px}
+  .shopItem .prev{width:54px;height:54px}
 }

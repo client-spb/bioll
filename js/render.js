@@ -355,6 +355,21 @@ window.Render = (function(){
       }
     }
 
+    // Декоративный рисунок (SVG-подобный) на битке, если у скина задан узор.
+    // Рисуется ПОВЕРХ базовой сферы, но ПОД глянцевым бликом, чтобы шар
+    // сохранял объёмный 3D-вид. Узор рисуется в нормализованных координатах
+    // (центр = 0,0; единица = радиус шара) — как векторный SVG.
+    if(b.cue && ballSkin && ballSkin.pattern && window.BallArt && BallArt.has(ballSkin.pattern)){
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+      ctx.clip();
+      ctx.translate(b.x, b.y);
+      ctx.scale(b.r, b.r);
+      BallArt.draw(ctx, ballSkin.pattern, { base: baseColor, glow: skin.glow, stripe: skin.stripe });
+      ctx.restore();
+    }
+
     // Главный блик (глянец)
     const hl = ctx.createRadialGradient(
       b.x - b.r*0.4, b.y - b.r*0.4, 0,

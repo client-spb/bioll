@@ -158,7 +158,12 @@ window.UI = (function(){
       prev.className = 'prev';
       prev.appendChild(buildPreview(shopTab, it));
 
-      // Инфо
+      // Имя (отдельный блок в шапке карточки)
+      const name = document.createElement('div');
+      name.className = 'cname';
+      name.innerHTML = `<b>${it.name}</b>`;
+
+      // Инфо (описание + чипы характеристик)
       const info = document.createElement('div');
       info.className = 'cinfo';
       let statsHtml = '';
@@ -168,9 +173,11 @@ window.UI = (function(){
       } else if(shopTab === 'cloth'){
         statsHtml = `<span class="stat-chip">Сукно стола</span>`;
       } else {
-        statsHtml = `<span class="stat-chip">Скин битка</span>`;
+        statsHtml = it.pattern
+          ? `<span class="stat-chip aim">Узор: ${patternLabel(it.pattern)}</span>`
+          : `<span class="stat-chip">Скин битка</span>`;
       }
-      info.innerHTML = `<b>${it.name}</b><div class="desc">${it.desc||''}</div><div class="stats">${statsHtml}</div>`;
+      info.innerHTML = `<div class="desc">${it.desc||''}</div><div class="stats">${statsHtml}</div>`;
 
       // Кнопка
       const btn = document.createElement('button');
@@ -194,6 +201,7 @@ window.UI = (function(){
       }
 
       div.appendChild(prev);
+      div.appendChild(name);
       div.appendChild(info);
       div.appendChild(btn);
       list.appendChild(div);
@@ -260,9 +268,55 @@ window.UI = (function(){
       wrap.style.borderColor = it.rail;
       wrap.appendChild(inner);
     } else { // ball
-      wrap.className = 'prev-ball';
-      wrap.style.background = `radial-gradient(circle at 32% 28%, ${shade(it.color, 60)}, ${it.color} 55%, ${shade(it.color, -40)})`;
-      wrap.style.boxShadow = `inset -6px -6px 12px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.4), 0 0 12px ${it.glow}66`;
+      // Если у скина есть декоративный узор — рисуем его на маленьком canvas,
+      // чтобы покупатель видел реальный рисунок шара (SVG-подобный).
+      if(it.pattern && window.BallArt && BallArt.has(it.pattern)){
+        wrap.className = 'prev-ball canvas';
+        // canvas фикс. разрешения; размер задаётся CSS, масштабирование через DPR
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        const SIZE = 96;
+        const cnv = document.createElement('canvas');
+        cnv.width = SIZE * dpr; cnv.height = SIZE * dpr;
+        cnv.style.width = '100%'; cnv.style.height = '100%';
+        const ctx = cnv.getContext('2d');
+        ctx.scale(dpr, dpr);
+        const cx = SIZE/2, cy = SIZE/2, rad = SIZE/2 - 3;
+
+        // базовый 3D-шар
+        const g = ctx.createRadialGradient(cx - rad*0.4, cy - rad*0.4, rad*0.05, cx, cy, rad);
+        g.addColorStop(0, shade(it.color, 60));
+        g.addColorStop(0.55, it.color);
+        g.addColorStop(1, shade(it.color, -40));
+        ctx.save();
+        ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI*2); ctx.clip();
+        ctx.fillStyle = g; ctx.fillRect(cx-rad, cy-rad, rad*2, rad*2);
+
+        // сам узор — в тех же нормализованных координатах, что и в игре
+        ctx.translate(cx, cy);
+        ctx.scale(rad, rad);
+        BallArt.draw(ctx, it.pattern, { base: it.color, glow: it.glow, stripe: it.stripe });
+        ctx.restore();
+
+        // глянцевый блик поверх
+        ctx.save();
+        ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI*2); ctx.clip();
+        const hl = ctx.createRadialGradient(cx - rad*0.4, cy - rad*0.4, 0, cx - rad*0.4, cy - rad*0.4, rad*0.6);
+        hl.addColorStop(0, 'rgba(255,255,255,.6)');
+        hl.addColorStop(0.5, 'rgba(255,255,255,.1)');
+        hl.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = hl; ctx.fillRect(cx-rad, cy-rad, rad*2, rad*2);
+        ctx.restore();
+
+        // окантовка/тень
+        ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI*2); ctx.stroke();
+        wrap.appendChild(cnv);
+        wrap.style.boxShadow = `0 2px 6px rgba(0,0,0,.4), 0 0 12px ${it.glow}55`;
+      } else {
+        wrap.className = 'prev-ball';
+        wrap.style.background = `radial-gradient(circle at 32% 28%, ${shade(it.color, 60)}, ${it.color} 55%, ${shade(it.color, -40)})`;
+        wrap.style.boxShadow = `inset -6px -6px 12px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.4), 0 0 12px ${it.glow}66`;
+      }
     }
     return wrap;
   }
@@ -280,6 +334,14 @@ window.UI = (function(){
     b = Math.max(0, Math.min(255, b+amt));
     return '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
   }
+
+  // Человекочитаемое название узора для чипа в магазине
+  const PATTERN_LABELS = {
+    dots:'Точки', flames:'Пламя', snowflake:'Снежинка',
+    galaxy:'Галактика', mercury:'Ртуть', star:'Звезда',
+    hex:'Соты', circuit:'Микросхема'
+  };
+  function patternLabel(name){ return PATTERN_LABELS[name] || name; }
 
   // ---- Экраны результата ----
   function showLevelEnd(data){
