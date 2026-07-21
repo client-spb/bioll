@@ -2,1058 +2,150 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#06140a">
   <title>Бильярд Мастер</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
-    html,body { width:100%; height:100%; overflow:hidden; background:#0a1a0a; font-family:'Segoe UI',Arial,sans-serif; touch-action:none; }
-    #game { position:fixed; top:0; left:0; width:100%; height:100%; }
-    canvas { display:block; background:#0d2818; }
-
-    #splashScreen {
-      position:fixed; inset:0; z-index:100;
-      background:#0a1a0a;
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-    }
-    #splashScreen.hidden { display:none; }
-    #splashImage { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; display:none; }
-    #splashOverlay {
-      position:absolute; inset:0;
-      background:linear-gradient(to bottom, rgba(10,26,10,0.3) 0%, rgba(10,26,10,0.7) 70%, rgba(10,26,10,0.95) 100%);
-    }
-    .splash-content {
-      position:relative; z-index:2;
-      display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
-      width:100%; height:100%; padding-bottom:60px;
-    }
-    .loading-title { color:#ffd700; font-size:1.8em; font-weight:bold; text-shadow:0 4px 20px rgba(0,0,0,0.8); margin-bottom:20px; letter-spacing:3px; }
-    .loading-bar-wrap { width:70%; max-width:400px; height:6px; background:rgba(255,255,255,0.15); border-radius:10px; overflow:hidden; box-shadow:0 0 30px rgba(255,215,0,0.1); }
-    .loading-bar { height:100%; width:0%; background:linear-gradient(90deg, #ffd700, #ffec8b, #ffd700); border-radius:10px; transition:width 0.3s ease; box-shadow:0 0 20px rgba(255,215,0,0.3); }
-    .loading-percent { color:rgba(255,255,255,0.6); font-size:0.9em; margin-top:12px; font-weight:300; letter-spacing:1px; }
-    .loading-status { color:rgba(255,255,255,0.4); font-size:0.7em; margin-top:6px; letter-spacing:2px; text-transform:uppercase; }
-
-    .overlay { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-      background:radial-gradient(circle at 50% 30%, #1a4028, #08150c); z-index:20; text-align:center; padding:20px; }
-    .hidden { display:none !important; }
-
-    .menu-header { display:flex; flex-direction:column; align-items:center; margin-bottom:10px; }
-    .menu-ball {
-      width:80px; height:80px; border-radius:50%;
-      background:radial-gradient(circle at 35% 30%, #555, #111 60%, #000 100%);
-      box-shadow:0 8px 40px rgba(0,0,0,0.8), inset -8px -8px 20px rgba(0,0,0,0.5), inset 8px 8px 20px rgba(255,255,255,0.05);
-      margin-bottom:8px; position:relative;
-    }
-    .menu-ball::after { content:''; position:absolute; top:20%; left:25%; width:25%; height:15%; background:radial-gradient(circle, rgba(255,255,255,0.3), transparent); border-radius:50%; transform:rotate(-30deg); }
-    .menu-ball-number { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.15); font-size:28px; font-weight:bold; font-family:'Arial',sans-serif; text-shadow:0 2px 4px rgba(0,0,0,0.5); }
-
-    h1 { color:#ffd700; font-size:2.4em; text-shadow:0 3px 8px #000; margin-bottom:8px; letter-spacing:1px; }
-    .sub { color:#8fbf8f; margin-bottom:24px; font-size:1em; }
-    .btn { background:linear-gradient(145deg,#ffd700,#e6a800); color:#3a2a00; border:none; padding:15px 34px;
-      font-size:1.2em; font-weight:bold; border-radius:30px; margin:8px; box-shadow:0 5px 0 #a67c00,0 8px 15px rgba(0,0,0,.4);
-      cursor:pointer; transition:transform .1s; }
-    .btn:active { transform:translateY(4px); box-shadow:0 1px 0 #a67c00; }
-    .btn2 { background:linear-gradient(145deg,#4caf50,#2e7d32); color:#fff; box-shadow:0 5px 0 #1b5e20,0 8px 15px rgba(0,0,0,.4); }
-    .btn2:active { box-shadow:0 1px 0 #1b5e20; }
-    .btn3 { background:linear-gradient(145deg,#ff9800,#e65100); color:#fff; box-shadow:0 5px 0 #bf360c,0 8px 15px rgba(0,0,0,.4); }
-
-    #hud {
-      position:fixed; top:0; left:0; width:100%; display:flex; justify-content:center; align-items:center;
-      padding:8px 12px; z-index:10; pointer-events:none; box-sizing:border-box;
-    }
-    #hud .hud-inner {
-      display:flex; justify-content:space-between; align-items:center;
-      width:100%; max-width:600px; margin:0 auto; pointer-events:none;
-    }
-    .hbox {
-      background:rgba(0,0,0,.55); border-radius:14px; padding:6px 12px;
-      color:#fff; font-size:.9em; font-weight:bold; display:flex; align-items:center; gap:6px;
-      backdrop-filter:blur(4px); pointer-events:auto;
-    }
-    .coin { color:#ffd700; }
-    .hbtn { pointer-events:auto; background:rgba(0,0,0,.55); color:#fff; border:none; padding:8px 12px; border-radius:12px; font-size:1.1em; cursor:pointer; line-height:1; }
-
-    #powerWrap { position:fixed; bottom:14px; left:50%; transform:translateX(-50%); width:70%; max-width:340px;
-      height:22px; background:rgba(0,0,0,.5); border-radius:12px; z-index:10; overflow:hidden; display:none; border:2px solid rgba(255,255,255,.15);}
-    #powerBar { height:100%; width:0%; background:linear-gradient(90deg,#4caf50,#ffeb3b,#f44336); transition:width .05s; }
-    #hint { position:fixed; bottom:44px; left:0; width:100%; text-align:center; color:#cde; font-size:.85em; z-index:9; text-shadow:0 2px 4px #000; pointer-events:none;}
-
-    .shopItem { background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.15); border-radius:16px; padding:12px 16px;
-      margin:6px; width:90%; max-width:340px; display:flex; align-items:center; justify-content:space-between; color:#fff;}
-    .shopItem .prev { width:44px; height:44px; border-radius:50%; flex-shrink:0; box-shadow:inset -6px -6px 10px rgba(0,0,0,.4); }
-    .shopItem .cinfo { flex:1; text-align:left; padding:0 12px; }
-    .shopItem .cinfo b { font-size:1.05em; }
-    .shopItem .cinfo small { color:#9c9; display:block; }
-    .buyb { background:#ffd700; color:#3a2a00; border:none; padding:8px 14px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:.9em;}
-    .buyb.owned { background:#4caf50; color:#fff; }
-    .buyb.sel { background:#2196f3; color:#fff; }
-    .buyb.locked { background:#555; color:#999; }
-    .scroll { width:100%; max-width:400px; overflow-y:auto; max-height:60vh; display:flex; flex-direction:column; align-items:center; }
-    .tabs { display:flex; gap:8px; margin:12px 0;}
-    .tab { padding:8px 20px; border-radius:20px; background:rgba(255,255,255,.1); color:#fff; cursor:pointer; font-weight:bold;}
-    .tab.active { background:#ffd700; color:#3a2a00; }
-
-    #msg { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,.8); color:#ffd700;
-      padding:16px 30px; border-radius:16px; font-size:1.4em; font-weight:bold; z-index:30; opacity:0; transition:opacity .3s; pointer-events:none;}
-    .lvlgoal { color:#ffd700; font-size:1em; margin:6px 0 18px; }
-
-    .pause-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:15; display:flex; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
-    .pause-overlay.hidden { display:none; }
-    .pause-overlay .btn { margin:10px; }
-
-    .timer { color:#ff6b6b; background:rgba(0,0,0,0.4); padding:4px 12px; border-radius:12px; font-weight:bold; }
-  </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<div id="splashScreen">
-  <img id="splashImage" src="assets/img/splash/splash.jpg" alt="Loading" style="display:none;">
-  <div id="splashOverlay"></div>
-  <div class="splash-content">
-    <div class="loading-title">БИЛЬЯРД МАСТЕР</div>
-    <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
-    <div class="loading-percent" id="loadingPercent">0%</div>
-    <div class="loading-status" id="loadingStatus">ЗАГРУЗКА АССЕТОВ...</div>
+  <!-- ============ СПЛЭШ-ЭКРАН ЗАГРУЗКИ ============ -->
+  <div id="splashScreen" class="screen">
+    <div class="splash-bg"></div>
+    <div class="splash-bg glow"></div>
+    <div class="splash-content">
+      <div class="splash-logo">
+        <div class="splash-ball spin"></div>
+        <div class="splash-title">БИЛЬЯРД<br><span>МАСТЕР</span></div>
+      </div>
+      <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
+      <div class="loading-percent" id="loadingPercent">0%</div>
+      <div class="loading-status" id="loadingStatus">Загрузка assets…</div>
+    </div>
   </div>
-</div>
 
-<div id="game"><canvas id="cv"></canvas></div>
+  <!-- ============ ИГРОВОЙ КАНВАС ============ -->
+  <div id="game"><canvas id="cv"></canvas></div>
 
-<div id="hud" class="hidden">
-  <div class="hud-inner">
-    <div class="hbox">Ур. <span id="lvlNum">1</span></div>
-    <div class="hbox">Шары: <span id="ballCount">0</span></div>
-    <div class="hbox coin">🪙 <span id="coins">0</span></div>
-    <div class="hbox timer" id="timerDisplay">⏱ 0</div>
-    <button class="hbtn" id="pauseBtn">⏸</button>
+  <!-- ============ HUD ============ -->
+  <div id="hud" class="hud hidden">
+    <div class="hud-inner">
+      <button class="hbtn icon-btn" id="pauseBtn" aria-label="Пауза">
+        <svg viewBox="0 0 24 24" class="ic"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+      </button>
+
+      <div class="hud-stats">
+        <div class="hbox"><span class="ic-lvl"></span><span id="lvlNum">1</span></div>
+        <div class="hbox"><span class="ball-mini"></span><span id="ballCount">0</span></div>
+        <div class="hbox" id="comboBadge"><span class="ic-combo"></span>×<span id="comboNum">1</span></div>
+        <div class="hbox timer hidden" id="timerDisplay"><svg viewBox="0 0 24 24" class="ic"><path d="M12 20a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm1-13h-2v6l4 2 1-1.7-3-1.8z"/></svg><span id="timerNum">0</span></div>
+      </div>
+
+      <div class="hbox coin" id="coinDisplay">
+        <span class="ic-coin"></span><span id="coins">0</span>
+      </div>
+    </div>
   </div>
-</div>
 
-<div id="powerWrap"><div id="powerBar"></div></div>
-<div id="hint" class="hidden">Тяни от белого шара для удара</div>
+  <!-- ============ ШКАЛА СИЛЫ ============ -->
+  <div id="powerWrap"><div id="powerBar"></div></div>
+  <div id="hint" class="hint hidden">Тяни от белого шара для удара</div>
 
-<div class="pause-overlay hidden" id="pauseMenu">
-  <h1 style="font-size:2em;">⏸ Пауза</h1>
-  <button class="btn" id="resumeBtn">▶ Продолжить</button>
-  <button class="btn btn2" id="pauseShopBtn">🛒 Магазин</button>
-  <button class="btn btn3" id="pauseMenuBtn">🏠 В меню</button>
-</div>
-
-<div class="overlay" id="mainMenu">
-  <div class="menu-header">
-    <div class="menu-ball"><span class="menu-ball-number">8</span></div>
-    <h1>Бильярд Мастер</h1>
+  <!-- ============ МЕНЮ ПАУЗЫ ============ -->
+  <div class="overlay hidden" id="pauseMenu">
+    <div class="panel">
+      <h2 class="panel-title">Пауза</h2>
+      <button class="btn" id="resumeBtn"><svg viewBox="0 0 24 24" class="ic"><path d="M8 5v14l11-7z"/></svg>Продолжить</button>
+      <button class="btn btn-shop" id="pauseShopBtn"><svg viewBox="0 0 24 24" class="ic"><path d="M3 5h2l2 12h11l2-9H6"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg>Магазин</button>
+      <button class="btn btn-back" id="pauseMenuBtn"><svg viewBox="0 0 24 24" class="ic"><path d="M10 19l-7-7 7-7v4h11v6H10z"/></svg>В меню</button>
+    </div>
   </div>
-  <div class="sub">Забивай шары, зарабатывай монеты,<br>прокачивай кии и шары!</div>
-  <button class="btn" id="playBtn">ИГРАТЬ</button>
-  <button class="btn btn2" id="shopBtn">🛒 Магазин</button>
-  <div class="sub" style="margin-top:20px;">🪙 <span id="menuCoins">0</span> монет</div>
-</div>
 
-<div class="overlay hidden" id="shop">
-  <h1 style="font-size:2em;">🛒 Магазин</h1>
-  <div class="tabs">
-    <div class="tab active" id="tabCue">🎯 Кии</div>
-    <div class="tab" id="tabBall">🎱 Шары</div>
+  <!-- ============ ГЛАВНОЕ МЕНЮ ============ -->
+  <div class="overlay hidden" id="mainMenu">
+    <div class="menu-bg"></div>
+    <div class="menu-content">
+      <div class="menu-logo">
+        <div class="logo-ball spin"><span>8</span></div>
+        <h1>Бильярд<br><span class="accent">Мастер</span></h1>
+      </div>
+      <p class="sub">Забивай шары, собирай комбо, прокачивай кий,<br>полотна и наборы шаров!</p>
+      <div class="menu-progress">
+        <div class="prog-stars">
+          <span class="star-mini"></span><span id="totalStars">0</span>
+          <span class="sep">/</span>
+          <span id="totalStarsMax">0</span>
+        </div>
+        <div class="prog-coins">
+          <span class="ic-coin"></span><span id="menuCoins">0</span>
+        </div>
+      </div>
+      <div class="menu-buttons">
+        <button class="btn btn-primary" id="playBtn">
+          <svg viewBox="0 0 24 24" class="ic"><path d="M8 5v14l11-7z"/></svg>
+          Играть — Уровень <span id="menuLevel">1</span>
+        </button>
+        <button class="btn btn-shop" id="shopBtn">
+          <svg viewBox="0 0 24 24" class="ic"><path d="M3 5h2l2 12h11l2-9H6"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg>
+          Магазин
+        </button>
+      </div>
+    </div>
   </div>
-  <div class="scroll" id="shopList"></div>
-  <div class="sub" style="margin-top:10px;">🪙 <span id="shopCoins">0</span></div>
-  <button class="btn btn2" id="shopBack">Назад</button>
-</div>
 
-<div class="overlay hidden" id="levelEnd">
-  <h1 id="leTitle">Уровень пройден!</h1>
-  <div class="lvlgoal" id="leReward"></div>
-  <button class="btn" id="nextBtn">Дальше ▶</button>
-  <button class="btn btn2" id="leMenu">Меню</button>
-</div>
+  <!-- ============ МАГАЗИН ============ -->
+  <div class="overlay hidden" id="shop">
+    <div class="shop-content">
+      <h2 class="panel-title">Магазин</h2>
+      <div class="shop-coins"><span class="ic-coin"></span><span id="shopCoins">0</span></div>
+      <div class="tabs">
+        <div class="tab active" data-tab="cue"><svg viewBox="0 0 24 24" class="ic"><path d="M2 22l12-12-2-2L0 20z M14 8l6-6 4 4-6 6z"/></svg>Кии</div>
+        <div class="tab" data-tab="cloth"><svg viewBox="0 0 24 24" class="ic"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 12h20" stroke-dasharray="3 3"/></svg>Полотна</div>
+        <div class="tab" data-tab="ball"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="9"/></svg>Шары</div>
+      </div>
+      <div class="scroll" id="shopList"></div>
+      <button class="btn btn-back" id="shopBack"><svg viewBox="0 0 24 24" class="ic"><path d="M10 19l-7-7 7-7v4h11v6H10z"/></svg>Назад</button>
+    </div>
+  </div>
 
-<div class="overlay hidden" id="levelStart">
-  <h1 id="lsTitle">Уровень 1</h1>
-  <div class="lvlgoal" id="lsGoal"></div>
-  <button class="btn" id="startBtn">Начать</button>
-  <button class="btn btn2" id="lsMenu">Меню</button>
-</div>
+  <!-- ============ ЭКРАН ОКОНЧАНИЯ УРОВНЯ ============ -->
+  <div class="overlay hidden" id="levelEnd">
+    <div class="panel result-panel">
+      <h2 id="leTitle" class="panel-title">Уровень пройден!</h2>
+      <div class="result-stars" id="leStars"></div>
+      <div class="result-rewards" id="leRewards"></div>
+      <div class="result-buttons">
+        <button class="btn btn-primary" id="nextBtn">Дальше</button>
+        <button class="btn btn-back" id="leMenu">Меню</button>
+      </div>
+    </div>
+  </div>
 
-<div id="msg"></div>
+  <!-- ============ ЭКРАН СТАРТА УРОВНЯ ============ -->
+  <div class="overlay hidden" id="levelStart">
+    <div class="panel start-panel">
+      <h2 id="lsTitle" class="panel-title">Уровень 1</h2>
+      <div class="start-goal" id="lsGoal"></div>
+      <div class="result-buttons">
+        <button class="btn btn-primary" id="startBtn">Начать</button>
+        <button class="btn btn-back" id="lsMenu">Меню</button>
+      </div>
+    </div>
+  </div>
 
-<script>
-// ============================================================
-// 1. ЗАГРУЗЧИК
-// ============================================================
-const ASSETS = { images: [], sounds: [] };
-let loadedCount = 0, totalAssets = 0;
-const MIN_LOAD_TIME = 1500;
-let startTime = Date.now();
+  <!-- ============ ТОСТ-СООБЩЕНИЯ ============ -->
+  <div id="toast" class="toast"></div>
+  <div id="comboFlyout" class="combo-flyout"></div>
 
-function updateLoader(progress, status) {
-  const bar = document.getElementById('loadingBar');
-  const percent = document.getElementById('loadingPercent');
-  const statusEl = document.getElementById('loadingStatus');
-  const pct = Math.min(100, Math.round(progress * 100));
-  bar.style.width = pct + '%';
-  percent.textContent = pct + '%';
-  if (status) statusEl.textContent = status;
-}
-
-async function loadAllAssets() {
-  totalAssets = 20;
-  let loaded = 0;
-  updateLoader(0, 'ЗАГРУЗКА...');
-  for (let i = 0; i < 20; i++) {
-    await new Promise(r => setTimeout(r, 60 + Math.random() * 80));
-    loaded++;
-    updateLoader(loaded / totalAssets, 'ЗАГРУЗКА...');
-  }
-  const elapsed = Date.now() - startTime;
-  if (elapsed < MIN_LOAD_TIME) {
-    const steps = 20, stepTime = (MIN_LOAD_TIME - elapsed) / steps;
-    for (let i = 0; i <= steps; i++) {
-      updateLoader((loaded + i / steps) / totalAssets, 'ФИНАЛИЗАЦИЯ...');
-      await new Promise(r => setTimeout(r, stepTime));
-    }
-  }
-  updateLoader(1, 'ГОТОВО!');
-  await new Promise(r => setTimeout(r, 300));
-}
-
-// ============================================================
-// 2. ЗВУК
-// ============================================================
-const AC = window.AudioContext || window.webkitAudioContext;
-let actx = null;
-function initAudio(){ if(!actx) actx = new AC(); if(actx.state==='suspended') actx.resume(); }
-function tone(freq,dur,type='sine',vol=.3,slideTo=null){
-  if(!actx) return;
-  const o=actx.createOscillator(), g=actx.createGain();
-  o.type=type; o.frequency.value=freq;
-  if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, actx.currentTime+dur);
-  g.gain.setValueAtTime(vol, actx.currentTime);
-  g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime+dur);
-  o.connect(g); g.connect(actx.destination);
-  o.start(); o.stop(actx.currentTime+dur);
-}
-function sndHit(p){ tone(180+p*120,.09,'triangle',.35); tone(90,.12,'sine',.2); }
-function sndClack(){ tone(600,.05,'square',.15,900); }
-function sndPot(){ tone(400,.08,'sine',.3,700); setTimeout(()=>tone(700,.1,'sine',.3,1000),60); }
-function sndWin(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.15,'triangle',.3),i*100)); }
-function sndFail(){ tone(300,.3,'sawtooth',.3,80); }
-function sndCoin(){ tone(880,.06,'square',.25); setTimeout(()=>tone(1320,.1,'square',.25),50); }
-function sndWall(){ tone(140,.06,'sine',.15); }
-function sndBuy(){ [660,880,1100].forEach((f,i)=>setTimeout(()=>tone(f,.1,'triangle',.25),i*60)); }
-
-// ============================================================
-// 3. СОСТОЯНИЕ
-// ============================================================
-let save = JSON.parse(localStorage.getItem('billiardSave')||'null') || {
-  coins:0, level:1, maxLevel:1, cue:0, ball:0, ownedCues:[0], ownedBalls:[0]
-};
-if(!save.ownedCues) save.ownedCues=[0];
-if(!save.ownedBalls) save.ownedBalls=[0];
-function persist(){ localStorage.setItem('billiardSave', JSON.stringify(save)); }
-
-const CUES = [
-  {name:'Классик', price:0, power:1.0, aim:0, color:'#c9a227'},
-  {name:'Дуб', price:150, power:1.12, aim:0, color:'#8b5a2b'},
-  {name:'Снайпер', price:400, power:1.08, aim:1, color:'#2196f3'},
-  {name:'Титан', price:800, power:1.20, aim:1, color:'#9e9e9e'},
-  {name:'Дракон', price:1500, power:1.30, aim:2, color:'#e53935'},
-  {name:'Легенда', price:3000, power:1.45, aim:2, color:'#ffd700'},
-];
-const BALLS = [
-  {name:'Белый', price:0, color:'#f5f5f5', glow:'#fff'},
-  {name:'Золотой', price:120, color:'#ffd700', glow:'#ffec8b'},
-  {name:'Неон', price:300, color:'#00e5ff', glow:'#7bf'},
-  {name:'Огонь', price:600, color:'#ff5722', glow:'#ff9'},
-  {name:'Алмаз', price:1200, color:'#e0f7fa', glow:'#0ff'},
-  {name:'Космос', price:2500, color:'#9c27b0', glow:'#e0f'},
-];
-
-const TOTAL_LEVELS = 100;
-
-// ============================================================
-// 4. КАНВАС
-// ============================================================
-const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
-let W,H, table, R;
-function resize(){
-  W = cv.width = window.innerWidth;
-  H = cv.height = window.innerHeight;
-  const margin = 24;
-  const availW = W - margin*2, availH = H - 130 - margin*2;
-  let tw = availW, th = tw*2;
-  if(th > availH){ th = availH; tw = th/2; }
-  table = { x:(W-tw)/2, y:80+(availH-th)/2, w:tw, h:th, wall: Math.max(14, tw*0.05) };
-  R = Math.max(10, tw*0.035);
-}
-window.addEventListener('resize', ()=>{ resize(); if(gameState==='playing') repositionAll(); });
-function repositionAll(){}
-
-// ============================================================
-// 5. ИГРОВЫЕ ОБЪЕКТЫ
-// ============================================================
-let balls=[], pockets=[], gameState='menu', shooting=false;
-let cueBall=null;
-let aimStart=null, aimCur=null, aiming=false;
-let level=1, targetsLeft=0, shots=0, obstacles=[];
-let particles=[];
-let currentLimit=0, timeLimit=0, timerInterval=null;
-let currentTargetType = 'all';
-let levelStartTime=0;
-
-// ============================================================
-// 6. КОНФИГУРАЦИЯ УРОВНЕЙ (100 уровней)
-// ============================================================
-function getLevelConfig(lv){
-  const colors = ['#e53935','#ffb300','#43a047','#1e88e5','#8e24aa','#00acc1','#f4511e','#ec407a','#26c6da','#7cb342'];
-  let cfg = { targets:1, obstacles:[], shotLimit:0, timeLimit:0, desc:'', colors:[], targetType:'all', shape:'triangle' };
-  
-  // Базовая сложность
-  const base = Math.min(12, Math.floor(lv / 5) + 2);
-  let targetCount = Math.min(14, base + Math.floor(lv / 8));
-  if (lv <= 2) targetCount = 1;
-  else if (lv <= 4) targetCount = 2;
-  else if (lv <= 6) targetCount = 3;
-  else if (lv <= 8) targetCount = 4;
-  else if (lv <= 10) targetCount = 5;
-  else if (lv <= 13) targetCount = 6;
-  else if (lv <= 16) targetCount = 7;
-  else if (lv <= 20) targetCount = 8;
-  else if (lv <= 25) targetCount = 9;
-  else if (lv <= 30) targetCount = 10;
-  else if (lv <= 40) targetCount = 11;
-  else if (lv <= 55) targetCount = 12;
-  else if (lv <= 75) targetCount = 13;
-  else targetCount = 14;
-  cfg.targets = targetCount;
-  cfg.colors = colors.slice(0, targetCount);
-  
-  // Тип цели
-  const r = lv % 7;
-  if (r === 0) cfg.targetType = 'striped';
-  else if (r === 1) cfg.targetType = 'solid';
-  else if (r === 2) cfg.targetType = 'striped';
-  else if (r === 3) cfg.targetType = 'solid';
-  else cfg.targetType = 'all';
-  
-  // Форма расстановки
-  const shapeR = (lv * 7 + 13) % 5;
-  if (shapeR === 0) cfg.shape = 'triangle';
-  else if (shapeR === 1) cfg.shape = 'diamond';
-  else if (shapeR === 2) cfg.shape = 'line';
-  else if (shapeR === 3) cfg.shape = 'square';
-  else cfg.shape = 'triangle';
-  
-  // Лимиты ударов и времени
-  if (lv <= 3) { cfg.shotLimit = 20; cfg.timeLimit = 0; }
-  else if (lv <= 6) { cfg.shotLimit = 18; cfg.timeLimit = 0; }
-  else if (lv <= 10) { cfg.shotLimit = 16; cfg.timeLimit = 0; }
-  else if (lv <= 15) { cfg.shotLimit = 14; cfg.timeLimit = 0; }
-  else if (lv <= 22) { cfg.shotLimit = 13; cfg.timeLimit = 0; }
-  else if (lv <= 30) { cfg.shotLimit = 12; cfg.timeLimit = 0; }
-  else if (lv <= 40) { cfg.shotLimit = 11; cfg.timeLimit = 0; }
-  else if (lv <= 55) { cfg.shotLimit = 10; cfg.timeLimit = 0; }
-  else if (lv <= 75) { cfg.shotLimit = 9; cfg.timeLimit = 0; }
-  else { cfg.shotLimit = 8; cfg.timeLimit = 0; }
-  
-  // Уровни со временем (каждый 7-й, начиная с 14)
-  if (lv >= 14 && lv % 7 === 0) {
-    cfg.timeLimit = 20 + Math.floor(lv / 7) * 2;
-    cfg.shotLimit = 0;
-  }
-  if (lv >= 21 && lv % 7 === 0) {
-    cfg.timeLimit = 18 + Math.floor(lv / 7) * 2;
-  }
-  
-  // Препятствия (не на каждом уровне)
-  if (lv >= 7 && lv % 3 === 0) {
-    const count = Math.min(3, 1 + Math.floor(lv / 15));
-    cfg.obstacles = makeObstacles(lv, count);
-  }
-  
-  // Описание
-  if (cfg.targetType === 'striped') cfg.desc = 'Забей только ПОЛОСАТЫЕ шары!';
-  else if (cfg.targetType === 'solid') cfg.desc = 'Забей только СПЛОШНЫЕ шары!';
-  else cfg.desc = 'Забей все шары!';
-  if (cfg.timeLimit > 0) cfg.desc += ` ⏱ ${cfg.timeLimit} сек`;
-  if (cfg.shotLimit > 0) cfg.desc += ` ⚡ ${cfg.shotLimit} ударов`;
-  
-  return cfg;
-}
-
-function makeObstacles(lv, count){
-  const arr=[];
-  let seed = lv*137 + 42;
-  function rnd(){ seed=(seed*9301+49297)%233280; return seed/233280; }
-  for(let i=0;i<count;i++){
-    arr.push({ rx: 0.15 + rnd()*0.7, ry: 0.15 + rnd()*0.6, w: 0.03 + rnd()*0.025 });
-  }
-  return arr;
-}
-
-function setupLevel(lv){
-  level = lv;
-  const cfg = getLevelConfig(lv);
-  balls=[]; particles=[]; obstacles=[];
-  currentLimit = cfg.shotLimit;
-  timeLimit = cfg.timeLimit || 0;
-  currentTargetType = cfg.targetType;
-  levelStartTime = Date.now();
-  
-  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-  document.getElementById('timerDisplay').textContent = timeLimit > 0 ? '⏱ '+timeLimit : '';
-  
-  cfg.obstacles.forEach(o=>{
-    obstacles.push({ x: table.x+table.w*o.rx, y: table.y+table.h*o.ry, r: table.w*o.w });
-  });
-  
-  cueBall = { x: table.x+table.w*0.5, y: table.y+table.h*0.82, vx:0, vy:0, r:R, cue:true, active:true,
-              color: BALLS[save.ball].color, glow: BALLS[save.ball].glow, type:'cue' };
-  balls.push(cueBall);
-  
-  const positions = getShapePositions(cfg.shape, cfg.targets);
-  const solidColors = ['#e53935','#43a047','#1e88e5','#8e24aa','#f4511e','#ec407a','#7cb342'];
-  const stripedColors = ['#ffb300','#00acc1','#26c6da','#9c27b0','#ff6f00','#d500f9','#00e5ff'];
-  
-  for(let i=0; i<cfg.targets && i<positions.length; i++){
-    const p = positions[i];
-    let type, color;
-    if (cfg.targetType === 'striped') {
-      type = 'striped';
-      color = stripedColors[i % stripedColors.length];
-    } else if (cfg.targetType === 'solid') {
-      type = 'solid';
-      color = solidColors[i % solidColors.length];
-    } else {
-      type = (i % 2 === 0) ? 'striped' : 'solid';
-      color = (i % 2 === 0) ? stripedColors[i % stripedColors.length] : solidColors[i % solidColors.length];
-    }
-    balls.push({
-      x: table.x + table.w * p.x,
-      y: table.y + table.h * p.y,
-      vx:0, vy:0, r:R, cue:false, active:true,
-      color: color,
-      glow: '#fff',
-      type: type,
-      isTarget: true
-    });
-  }
-  
-  targetsLeft = balls.filter(b => !b.cue && b.isTarget).length;
-  shots = 0;
-  
-  const pr = R*1.9;
-  pockets=[
-    {x:table.x, y:table.y, r:pr},
-    {x:table.x+table.w, y:table.y, r:pr},
-    {x:table.x-pr*0.2, y:table.y+table.h/2, r:pr},
-    {x:table.x+table.w+pr*0.2, y:table.y+table.h/2, r:pr},
-    {x:table.x, y:table.y+table.h, r:pr},
-    {x:table.x+table.w, y:table.y+table.h, r:pr},
-  ];
-  updateHud();
-  
-  if (timeLimit > 0) {
-    timerInterval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - levelStartTime) / 1000);
-      const remaining = Math.max(0, timeLimit - elapsed);
-      document.getElementById('timerDisplay').textContent = '⏱ '+remaining;
-      if (remaining <= 0) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        if (gameState === 'playing') {
-          showMsg('Время вышло!');
-          setTimeout(() => failLevel(), 400);
-        }
-      }
-    }, 500);
-  }
-}
-
-function getShapePositions(shape, count){
-  const positions = [];
-  const cx = 0.5, cy = 0.25;
-  if(shape === 'triangle'){
-    let row = 0, placed = 0;
-    while(placed < count){
-      const cols = row + 1;
-      for(let c = 0; c < cols && placed < count; c++){
-        const x = cx - (cols-1)*0.025 + c * 0.05;
-        const y = cy + row * 0.06;
-        positions.push({x, y});
-        placed++;
-      }
-      row++;
-    }
-  } else if(shape === 'diamond'){
-    const size = Math.ceil(Math.sqrt(count));
-    for(let r = 0; r < size && positions.length < count; r++){
-      for(let c = 0; c < size && positions.length < count; c++){
-        const x = cx - (size-1)*0.025 + c * 0.05;
-        const y = cy - (size-1)*0.03 + r * 0.06;
-        positions.push({x, y});
-      }
-    }
-  } else if(shape === 'line'){
-    for(let i = 0; i < count; i++){
-      const x = cx - (count-1)*0.02 + i * 0.04;
-      const y = cy + 0.02;
-      positions.push({x, y});
-    }
-  } else if(shape === 'square'){
-    const cols = Math.ceil(Math.sqrt(count));
-    const rows = Math.ceil(count / cols);
-    for(let r = 0; r < rows && positions.length < count; r++){
-      for(let c = 0; c < cols && positions.length < count; c++){
-        const x = cx - (cols-1)*0.025 + c * 0.05;
-        const y = cy - (rows-1)*0.03 + r * 0.06;
-        positions.push({x, y});
-      }
-    }
-  }
-  return positions;
-}
-
-// ============================================================
-// 7. ФИЗИКА
-// ============================================================
-const FRICTION = 0.988, MINV = 0.05;
-function updatePhysics(){
-  let moving=false;
-  for(const b of balls){
-    if(!b.active) continue;
-    b.x += b.vx; b.y += b.vy;
-    b.vx *= FRICTION; b.vy *= FRICTION;
-    if(Math.abs(b.vx)<MINV) b.vx=0;
-    if(Math.abs(b.vy)<MINV) b.vy=0;
-    if(b.vx!==0||b.vy!==0) moving=true;
-
-    const left=table.x+b.r, right=table.x+table.w-b.r, top=table.y+b.r, bot=table.y+table.h-b.r;
-    if(b.x<left){ b.x=left; b.vx*=-0.85; if(Math.abs(b.vx)>1.5)sndWall(); }
-    if(b.x>right){ b.x=right; b.vx*=-0.85; if(Math.abs(b.vx)>1.5)sndWall(); }
-    if(b.y<top){ b.y=top; b.vy*=-0.85; if(Math.abs(b.vy)>1.5)sndWall(); }
-    if(b.y>bot){ b.y=bot; b.vy*=-0.85; if(Math.abs(b.vy)>1.5)sndWall(); }
-
-    for(const o of obstacles){
-      const d=Math.hypot(b.x-o.x,b.y-o.y), min=o.r+b.r;
-      if(d<min && d>0){
-        const nx=(b.x-o.x)/d, ny=(b.y-o.y)/d;
-        b.x=o.x+nx*min; b.y=o.y+ny*min;
-        const dot=b.vx*nx+b.vy*ny;
-        b.vx-=2*dot*nx; b.vy-=2*dot*ny;
-        b.vx*=0.85; b.vy*=0.85;
-        if(Math.abs(dot)>1)sndClack();
-      }
-    }
-  }
-  for(let i=0;i<balls.length;i++){
-    for(let j=i+1;j<balls.length;j++){
-      const a=balls[i],b=balls[j];
-      if(!a.active||!b.active) continue;
-      const dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy), min=a.r+b.r;
-      if(d<min && d>0){
-        const nx=dx/d, ny=dy/d;
-        const overlap=min-d;
-        a.x-=nx*overlap/2; a.y-=ny*overlap/2;
-        b.x+=nx*overlap/2; b.y+=ny*overlap/2;
-        const dvx=b.vx-a.vx, dvy=b.vy-a.vy;
-        const dot=dvx*nx+dvy*ny;
-        if(dot<0){
-          const imp=dot;
-          a.vx+=imp*nx; a.vy+=imp*ny;
-          b.vx-=imp*nx; b.vy-=imp*ny;
-          if(Math.abs(imp)>1) sndClack();
-          spawnParticles((a.x+b.x)/2,(a.y+b.y)/2,3,'#fff');
-        }
-      }
-    }
-  }
-  for(const b of balls){
-    if(!b.active) continue;
-    for(const p of pockets){
-      if(Math.hypot(b.x-p.x,b.y-p.y) < p.r){ potBall(b); break; }
-    }
-  }
-
-  if(shooting && !moving){
-    shooting=false;
-    onTurnEnd();
-  }
-}
-
-function potBall(b){
-  b.active=false; b.vx=0; b.vy=0;
-  spawnParticles(b.x,b.y,18,b.color);
-  if(b.cue){
-    sndFail();
-    showMsg('Белый в лузе! Уровень провален!');
-    setTimeout(() => { failLevel(); }, 500);
-    return;
-  } else {
-    if(b.isTarget){
-      if(currentTargetType === 'all' || b.type === currentTargetType){
-        sndPot();
-        targetsLeft--;
-        save.coins += 5;
-        sndCoin();
-        updateHud();
-      } else {
-        sndFail();
-        showMsg('Не тот тип шара!');
-      }
-    } else {
-      sndFail();
-      showMsg('Этот шар нельзя забивать!');
-    }
-  }
-}
-
-function spawnParticles(x,y,n,color){
-  for(let i=0;i<n;i++){
-    const a=Math.random()*Math.PI*2, s=1+Math.random()*4;
-    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,color});
-  }
-}
-
-function findFreeSpot(){
-  for(let attempt=0;attempt<200;attempt++){
-    const x=table.x+table.w*(0.2+Math.random()*0.6);
-    const y=table.y+table.h*(0.7+Math.random()*0.22);
-    let ok=true;
-    for(const b of balls){ if(b!==cueBall && b.active && Math.hypot(x-b.x,y-b.y)<R*2.4){ok=false;break;} }
-    for(const o of obstacles){ if(Math.hypot(x-o.x,y-o.y)<o.r+R*1.5){ok=false;break;} }
-    if(ok) return {x,y};
-  }
-  return {x:table.x+table.w*0.5, y:table.y+table.h*0.82};
-}
-
-function onTurnEnd(){
-  if(!cueBall.active) return;
-  if(targetsLeft<=0){ winLevel(); return; }
-  if(currentLimit>0 && shots>=currentLimit){ failLevel(); return; }
-}
-
-function winLevel(){
-  gameState='levelend';
-  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-  sndWin();
-  const reward = 15 + level*4;
-  save.coins += reward;
-  const isLast = level >= TOTAL_LEVELS;
-  if(!isLast){
-    save.maxLevel = Math.max(save.maxLevel, level+1);
-    save.level = level+1;
-  } else {
-    save.maxLevel = TOTAL_LEVELS+1;
-  }
-  persist();
-  if(isLast){
-    document.getElementById('leTitle').textContent='🏆 ТЫ БИЛЬЯРД МАСТЕР!';
-    document.getElementById('leReward').innerHTML='Все '+TOTAL_LEVELS+' уровней пройдены!<br>Награда: 🪙 '+reward;
-    document.getElementById('nextBtn').textContent='🏠 В меню';
-    nextIsMenu = true;
-  } else {
-    document.getElementById('leTitle').textContent='🎉 Уровень '+level+' пройден!';
-    document.getElementById('leReward').innerHTML='Награда: 🪙 '+reward+'<br>+5 за каждый забитый шар';
-    document.getElementById('nextBtn').textContent='Уровень '+(level+1)+' ▶';
-    nextIsMenu = false;
-    nextIsRetry = false;
-  }
-  show('levelEnd');
-}
-let nextIsMenu=false, nextIsRetry=false;
-function failLevel(){
-  gameState='levelend';
-  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-  sndFail();
-  persist();
-  document.getElementById('leTitle').textContent='😢 Поражение';
-  let reason = '';
-  if(!cueBall.active) reason = 'Белый шар в лузе! ';
-  if(currentLimit>0 && shots>=currentLimit) reason = 'Лимит ударов исчерпан! ';
-  if(timeLimit>0 && document.getElementById('timerDisplay').textContent === '⏱ 0') reason = 'Время вышло! ';
-  document.getElementById('leReward').textContent = reason + 'Уровень '+level+'. Попробуй ещё раз!';
-  document.getElementById('nextBtn').textContent='↻ Заново';
-  nextIsMenu=false; nextIsRetry=true;
-  show('levelEnd');
-}
-
-// ============================================================
-// 8. ОТРИСОВКА
-// ============================================================
-function draw(){
-  ctx.clearRect(0,0,W,H);
-  const g=ctx.createRadialGradient(W/2,H/2,50,W/2,H/2,Math.max(W,H));
-  g.addColorStop(0,'#123'); g.addColorStop(1,'#020'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  if(gameState==='menu') return;
-
-  const wall=table.wall;
-  ctx.fillStyle='#5d3a1a';
-  roundRect(table.x-wall,table.y-wall,table.w+wall*2,table.h+wall*2,wall);
-  ctx.fill();
-  ctx.fillStyle='#7a4d24';
-  roundRect(table.x-wall*0.5,table.y-wall*0.5,table.w+wall,table.h+wall,wall*0.6);
-  ctx.fill();
-  const cg=ctx.createRadialGradient(table.x+table.w/2,table.y+table.h/2,20,table.x+table.w/2,table.y+table.h/2,table.h*0.7);
-  cg.addColorStop(0,'#1b7a3e'); cg.addColorStop(1,'#0d4a24');
-  ctx.fillStyle=cg;
-  ctx.fillRect(table.x,table.y,table.w,table.h);
-  
-  ctx.strokeStyle='rgba(255,255,255,.15)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(table.x,table.y+table.h*0.75); ctx.lineTo(table.x+table.w,table.y+table.h*0.75); ctx.stroke();
-  ctx.beginPath(); ctx.arc(table.x+table.w*0.5,table.y+table.h*0.75,table.w*0.12,0,Math.PI*2); ctx.stroke();
-
-  for(const p of pockets){
-    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fillStyle='#000'; ctx.fill();
-    ctx.strokeStyle='#3a2410'; ctx.lineWidth=3; ctx.stroke();
-  }
-
-  for(const o of obstacles){
-    ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
-    const og=ctx.createRadialGradient(o.x-o.r*0.3,o.y-o.r*0.3,2,o.x,o.y,o.r);
-    og.addColorStop(0,'#64b5f6'); og.addColorStop(1,'#1565c0');
-    ctx.fillStyle=og; ctx.fill();
-    ctx.strokeStyle='#0d47a1'; ctx.lineWidth=2; ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,.2)';
-    ctx.beginPath(); ctx.arc(o.x-o.r*0.2,o.y-o.r*0.3,o.r*0.3,0,Math.PI*2); ctx.fill();
-  }
-
-  if(aiming && aimStart && aimCur && cueBall.active && !shooting){ drawAim(); }
-  for(const b of balls){ if(b.active) drawBall(b); }
-  if(aiming && aimStart && aimCur && cueBall.active && !shooting){ drawCue(); }
-
-  for(const p of particles){
-    ctx.globalAlpha=p.life;
-    ctx.fillStyle=p.color;
-    ctx.beginPath(); ctx.arc(p.x,p.y,3*p.life,0,Math.PI*2); ctx.fill();
-  }
-  ctx.globalAlpha=1;
-}
-function roundRect(x,y,w,h,r){
-  ctx.beginPath();
-  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
-  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
-}
-function drawBall(b){
-  ctx.save();
-  ctx.shadowColor='rgba(0,0,0,.5)'; ctx.shadowBlur=6; ctx.shadowOffsetY=3;
-  
-  const g=ctx.createRadialGradient(b.x-b.r*0.35,b.y-b.r*0.35,b.r*0.1,b.x,b.y,b.r);
-  g.addColorStop(0, b.cue ? b.glow : lighten(b.color,60));
-  g.addColorStop(1, b.color);
-  ctx.fillStyle=g;
-  ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fill();
-  
-  if(!b.cue && b.type === 'striped'){
-    ctx.save();
-    ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.clip();
-    ctx.fillStyle='rgba(255,255,255,0.5)';
-    ctx.fillRect(b.x-b.r, b.y-b.r*0.15, b.r*2, b.r*0.25);
-    ctx.fillRect(b.x-b.r, b.y+b.r*0.15, b.r*2, b.r*0.25);
-    ctx.restore();
-  }
-  
-  if(!b.cue){
-    ctx.fillStyle='rgba(255,255,255,0.15)';
-    ctx.font=`${b.r*0.7}px Arial`;
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    ctx.fillText('●', b.x, b.y+1);
-  }
-  
-  ctx.restore();
-  ctx.fillStyle='rgba(255,255,255,.5)';
-  ctx.beginPath(); ctx.arc(b.x-b.r*0.3,b.y-b.r*0.3,b.r*0.2,0,Math.PI*2); ctx.fill();
-}
-function lighten(hex,amt){
-  const c=hex.replace('#',''); let r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),bl=parseInt(c.substr(4,2),16);
-  r=Math.min(255,r+amt);g=Math.min(255,g+amt);bl=Math.min(255,bl+amt);
-  return `rgb(${r},${g},${bl})`;
-}
-function drawAim(){
-  const dx=aimStart.x-aimCur.x, dy=aimStart.y-aimCur.y;
-  const ang=Math.atan2(dy,dx);
-  ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=2; ctx.setLineDash([8,8]);
-  const aimLevel = CUES[save.cue].aim;
-  const len = table.h*(0.35+aimLevel*0.2);
-  ctx.beginPath();
-  ctx.moveTo(cueBall.x,cueBall.y);
-  ctx.lineTo(cueBall.x+Math.cos(ang)*len, cueBall.y+Math.sin(ang)*len);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  if(aimLevel>=1){
-    const hit = predictHit(cueBall.x,cueBall.y,ang);
-    if(hit){
-      ctx.strokeStyle='rgba(255,255,0,.6)'; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.arc(hit.x,hit.y,R,0,Math.PI*2); ctx.stroke();
-      const rdx=hit.tx-hit.x, rdy=hit.ty-hit.y, rl=Math.hypot(rdx,rdy);
-      if(rl>0 && aimLevel>=2){
-        ctx.strokeStyle='rgba(255,150,0,.5)'; ctx.setLineDash([5,5]);
-        ctx.beginPath(); ctx.moveTo(hit.tx,hit.ty);
-        ctx.lineTo(hit.tx+(hit.tx-hit.x)/rl*len*0.4, hit.ty+(hit.ty-hit.y)/rl*len*0.4);
-        ctx.stroke(); ctx.setLineDash([]);
-      }
-    }
-  }
-}
-function predictHit(sx,sy,ang){
-  const dirx=Math.cos(ang), diry=Math.sin(ang);
-  let best=null, bestD=Infinity;
-  for(const b of balls){
-    if(!b.active||b.cue) continue;
-    const ex=b.x-sx, ey=b.y-sy;
-    const proj=ex*dirx+ey*diry;
-    if(proj<0) continue;
-    const perp=Math.abs(ex*diry-ey*dirx);
-    if(perp < R*2){
-      const back=Math.sqrt(Math.max(0,(R*2)**2 - perp*perp));
-      const dist=proj-back;
-      if(dist<bestD && dist>0){
-        bestD=dist;
-        best={ x:sx+dirx*dist, y:sy+diry*dist, tx:b.x, ty:b.y };
-      }
-    }
-  }
-  return best;
-}
-function drawCue(){
-  const dx=aimStart.x-aimCur.x, dy=aimStart.y-aimCur.y;
-  const ang=Math.atan2(dy,dx);
-  const power=Math.min(Math.hypot(dx,dy), table.h*0.4);
-  const back = R*2 + power*0.4;
-  const cueLen = table.h*0.4, cueW=R*0.55;
-  const bx=cueBall.x-Math.cos(ang)*back, by=cueBall.y-Math.sin(ang)*back;
-  const ex=bx-Math.cos(ang)*cueLen, ey=by-Math.sin(ang)*cueLen;
-  ctx.save();
-  ctx.lineCap='round';
-  const cueColor = CUES[save.cue].color;
-  ctx.strokeStyle=cueColor; ctx.lineWidth=cueW;
-  ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(ex,ey); ctx.stroke();
-  ctx.strokeStyle='#eee'; ctx.lineWidth=cueW*0.5;
-  ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx-Math.cos(ang)*cueW*2,by-Math.sin(ang)*cueW*2); ctx.stroke();
-  ctx.restore();
-}
-
-// ============================================================
-// 9. ИГРОВОЙ ЦИКЛ
-// ============================================================
-function loop(){
-  if(gameState==='playing'){ updatePhysics(); }
-  for(let i=particles.length-1;i>=0;i--){
-    const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vx*=0.94; p.vy*=0.94; p.life-=0.03;
-    if(p.life<=0) particles.splice(i,1);
-  }
-  draw();
-  requestAnimationFrame(loop);
-}
-
-// ============================================================
-// 10. УПРАВЛЕНИЕ
-// ============================================================
-function getPos(e){
-  const t=e.touches?e.touches[0]:e;
-  return {x:t.clientX, y:t.clientY};
-}
-function anyMoving(){ return balls.some(b=>b.active && (b.vx!==0||b.vy!==0)); }
-
-function onDown(e){
-  if(gameState!=='playing'||shooting||anyMoving()||!cueBall.active) return;
-  const p=getPos(e);
-  aiming=true;
-  aimStart={x:cueBall.x,y:cueBall.y};
-  aimCur=p;
-  document.getElementById('powerWrap').style.display='block';
-  e.preventDefault();
-}
-function onMove(e){
-  if(!aiming) return;
-  aimCur=getPos(e);
-  const dx=aimStart.x-aimCur.x, dy=aimStart.y-aimCur.y;
-  const power=Math.min(Math.hypot(dx,dy)/(table.h*0.4),1);
-  document.getElementById('powerBar').style.width=(power*100)+'%';
-  e.preventDefault();
-}
-function onUp(e){
-  if(!aiming) return;
-  aiming=false;
-  document.getElementById('powerWrap').style.display='none';
-  document.getElementById('powerBar').style.width='0%';
-  const dx=aimStart.x-aimCur.x, dy=aimStart.y-aimCur.y;
-  const dist=Math.hypot(dx,dy);
-  if(dist<10){ return; }
-  const power=Math.min(dist,table.h*0.4);
-  const speed = power*0.13 * CUES[save.cue].power;
-  const ang=Math.atan2(dy,dx);
-  cueBall.vx=Math.cos(ang)*speed;
-  cueBall.vy=Math.sin(ang)*speed;
-  shooting=true;
-  shots++;
-  sndHit(power/(table.h*0.4));
-  updateHud();
-  e.preventDefault();
-}
-cv.addEventListener('touchstart',onDown,{passive:false});
-cv.addEventListener('touchmove',onMove,{passive:false});
-cv.addEventListener('touchend',onUp,{passive:false});
-cv.addEventListener('mousedown',onDown);
-cv.addEventListener('mousemove',onMove);
-cv.addEventListener('mouseup',onUp);
-
-// ============================================================
-// 11. HUD / UI
-// ============================================================
-function updateHud(){
-  document.getElementById('lvlNum').textContent=level+'/'+TOTAL_LEVELS;
-  document.getElementById('coins').textContent=save.coins;
-  document.getElementById('menuCoins').textContent=save.coins;
-  document.getElementById('shopCoins').textContent=save.coins;
-  const limitTxt = currentLimit>0 ? (targetsLeft+' ⚡'+(currentLimit-shots)) : targetsLeft;
-  document.getElementById('ballCount').textContent=limitTxt;
-}
-function show(id){
-  ['mainMenu','shop','levelEnd','levelStart'].forEach(o=>document.getElementById(o).classList.add('hidden'));
-  if(id) document.getElementById(id).classList.remove('hidden');
-  document.getElementById('hud').classList.add('hidden');
-  document.getElementById('hint').classList.add('hidden');
-}
-let msgTimer;
-function showMsg(t){
-  const m=document.getElementById('msg'); m.textContent=t; m.style.opacity=1;
-  clearTimeout(msgTimer); msgTimer=setTimeout(()=>m.style.opacity=0,1200);
-}
-
-function startLevel(lv){
-  resize();
-  setupLevel(lv);
-  gameState='playing';
-  ['mainMenu','shop','levelEnd','levelStart'].forEach(o=>document.getElementById(o).classList.add('hidden'));
-  document.getElementById('hud').classList.remove('hidden');
-  document.getElementById('hint').classList.remove('hidden');
-  document.getElementById('pauseMenu').classList.add('hidden');
-  setTimeout(()=>document.getElementById('hint').classList.add('hidden'),3000);
-  updateHud();
-}
-
-let pendingLevel=1;
-function showLevelStart(lv){
-  pendingLevel=lv;
-  level=lv;
-  const cfg=getLevelConfig(lv);
-  document.getElementById('lsTitle').textContent='Уровень '+lv+' из '+TOTAL_LEVELS;
-  let g=cfg.desc;
-  g+='<br>🎯 Шаров забить: '+cfg.targets;
-  if(cfg.shotLimit>0) g+='<br>⚡ Лимит ударов: '+cfg.shotLimit;
-  if(cfg.timeLimit>0) g+='<br>⏱ Время: '+cfg.timeLimit+' сек';
-  if(cfg.targetType === 'striped') g+='<br>🔴 Только ПОЛОСАТЫЕ шары!';
-  if(cfg.targetType === 'solid') g+='<br>🔵 Только СПЛОШНЫЕ шары!';
-  if(cfg.obstacles.length > 0) g+='<br>🧱 Препятствия на поле';
-  document.getElementById('lsGoal').innerHTML=g;
-  gameState='start';
-  show('levelStart');
-}
-
-document.getElementById('playBtn').onclick=()=>{ initAudio(); showLevelStart(save.level); };
-document.getElementById('startBtn').onclick=()=>{ initAudio(); startLevel(pendingLevel); };
-document.getElementById('lsMenu').onclick=()=>{ gameState='menu'; show('mainMenu'); updateHud(); };
-
-document.getElementById('nextBtn').onclick=()=>{
-  if(nextIsMenu){ gameState='menu'; show('mainMenu'); updateHud(); return; }
-  if(nextIsRetry){ showLevelStart(level); return; }
-  showLevelStart(save.level);
-};
-document.getElementById('leMenu').onclick=()=>{ gameState='menu'; show('mainMenu'); updateHud(); };
-document.getElementById('shopBtn').onclick=()=>{ initAudio(); openShop('cue'); };
-document.getElementById('shopBack').onclick=()=>{ 
-  if(gameState === 'playing') {
-    document.getElementById('shop').classList.add('hidden');
-    document.getElementById('pauseMenu').classList.remove('hidden');
-  } else {
-    show('mainMenu');
-  }
-};
-
-document.getElementById('pauseBtn').onclick=()=>{
-  if(gameState === 'playing'){
-    document.getElementById('pauseMenu').classList.remove('hidden');
-  }
-};
-document.getElementById('resumeBtn').onclick=()=>{
-  document.getElementById('pauseMenu').classList.add('hidden');
-};
-document.getElementById('pauseShopBtn').onclick=()=>{
-  initAudio();
-  document.getElementById('pauseMenu').classList.add('hidden');
-  openShop('cue');
-};
-document.getElementById('pauseMenuBtn').onclick=()=>{
-  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-  gameState='menu';
-  document.getElementById('pauseMenu').classList.add('hidden');
-  show('mainMenu');
-  updateHud();
-};
-
-let shopTab='cue';
-document.getElementById('tabCue').onclick=()=>openShop('cue');
-document.getElementById('tabBall').onclick=()=>openShop('ball');
-function openShop(tab){
-  shopTab=tab;
-  ['mainMenu','levelEnd','levelStart'].forEach(o=>document.getElementById(o).classList.add('hidden'));
-  document.getElementById('shop').classList.remove('hidden');
-  document.getElementById('hud').classList.add('hidden');
-  document.getElementById('tabCue').classList.toggle('active',tab==='cue');
-  document.getElementById('tabBall').classList.toggle('active',tab==='ball');
-  renderShop();
-  updateHud();
-}
-function renderShop(){
-  const list=document.getElementById('shopList'); list.innerHTML='';
-  const items = shopTab==='cue'?CUES:BALLS;
-  const owned = shopTab==='cue'?save.ownedCues:save.ownedBalls;
-  const sel = shopTab==='cue'?save.cue:save.ball;
-  items.forEach((it,i)=>{
-    const div=document.createElement('div'); div.className='shopItem';
-    const prev=document.createElement('div'); prev.className='prev';
-    if(shopTab==='ball'){ prev.style.background='radial-gradient(circle at 30% 30%,'+lighten(it.color,60)+','+it.color+')'; }
-    else { prev.style.background=it.color; prev.style.borderRadius='4px'; prev.style.height='12px'; prev.style.width='60px'; }
-    const info=document.createElement('div'); info.className='cinfo';
-    let stats = shopTab==='cue'? ('Сила: '+Math.round(it.power*100)+'% • Прицел: '+['нет','базовый','про'][it.aim]) : 'Скин шара';
-    info.innerHTML='<b>'+it.name+'</b><small>'+stats+'</small>';
-    const btn=document.createElement('button'); btn.className='buyb';
-    if(owned.includes(i)){
-      if(sel===i){ btn.textContent='✓ Выбран'; btn.classList.add('sel'); }
-      else { btn.textContent='Выбрать'; btn.classList.add('owned');
-        btn.onclick=()=>{ if(shopTab==='cue')save.cue=i; else save.ball=i; persist(); sndClack(); renderShop(); if(cueBall){cueBall.color=BALLS[save.ball].color;cueBall.glow=BALLS[save.ball].glow;} };
-      }
-    } else {
-      btn.textContent='🪙 '+it.price;
-      if(save.coins < it.price){ btn.classList.add('locked'); }
-      btn.onclick=()=>{
-        if(save.coins>=it.price){
-          save.coins-=it.price; owned.push(i);
-          if(shopTab==='cue')save.cue=i; else save.ball=i;
-          persist(); sndBuy(); renderShop(); updateHud();
-        } else { showMsg('Мало монет!'); sndFail(); }
-      };
-    }
-    div.appendChild(prev); div.appendChild(info); div.appendChild(btn);
-    list.appendChild(div);
-  });
-}
-
-// ============================================================
-// 12. ЗАПУСК
-// ============================================================
-async function initGame() {
-  document.getElementById('splashScreen').classList.remove('hidden');
-  await loadAllAssets();
-  document.getElementById('splashScreen').classList.add('hidden');
-  resize();
-  show('mainMenu');
-  updateHud();
-  loop();
-}
-initGame();
-</script>
+  <!-- ============ СКРИПТЫ (порядок важен — без зависимостей) ============ -->
+  <script src="js/config.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/physics.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
