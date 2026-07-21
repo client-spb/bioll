@@ -571,7 +571,14 @@ window.Game = (function(){
     requestAnimationFrame(loop);
   }
 
-  return { init, onSkinChanged, startLevel, showLevelStart };
+  return { init, onSkinChanged, startLevel, showLevelStart,
+    // Тестовый доступ (не используется в продакшене)
+    _debug: () => ({
+      gameState, level, targetsLeft, totalTargets, shots, shotLimit,
+      timeRemaining, combo, balls: balls.map(b => ({x:b.x,y:b.y,cue:b.cue,active:b.active,isTarget:b.isTarget,type:b.type})),
+      table, R
+    })
+  };
 })();
 
 // Запуск

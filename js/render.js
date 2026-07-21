@@ -294,6 +294,19 @@ window.Render = (function(){
     const baseColor = skin.color;
     const glow = skin.glow || lighten(baseColor, 40);
 
+    // Подсветка целевого шара (если этот тип — цель)
+    const isCurrentTarget = !b.cue && b.isTarget && (targetType === 'all' || b.type === targetType);
+    if(isCurrentTarget){
+      const pulse = 0.5 + 0.5*Math.sin(performance.now()/350);
+      ctx.save();
+      ctx.globalAlpha = 0.25 + pulse*0.25;
+      ctx.fillStyle = '#ffd24a';
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r * (1.25 + pulse*0.15), 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+
     ctx.save();
     // Тень
     ctx.shadowColor = 'rgba(0,0,0,.5)';
