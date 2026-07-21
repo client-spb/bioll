@@ -28,9 +28,10 @@ window.Physics = (function(){
     let moving = false;
 
     // 1) Перемещение + трение + стены
-    // Радиус, внутри которого луза «размыкает» борт: шар может провалиться,
-    // не отскакивая от стенки. Должен совпадать с catchR из секции луз.
-    const POCKET_GAP = R * 1.5;
+    // Радиус «горлышка» лузы должен совпадать с catchR из секции 4 —
+    // в пределах этой зоны борт разомкнут, чтобы шар мог провалиться,
+    // а не отскочить от стенки у самой лузы.
+    const catchRadius = p => p.r * 1.05;
     for(const b of balls){
       if(!b.active) continue;
       b.x += b.vx; b.y += b.vy;
@@ -39,10 +40,10 @@ window.Physics = (function(){
       if(Math.abs(b.vy) < MINV) b.vy = 0;
       if(b.vx !== 0 || b.vy !== 0) moving = true;
 
-      // Шар, попавший в горлышко лузы, не должен отскакивать от борта.
+      // Шар, попавший в горлышко любой лузы, не отскакивает от борта.
       let nearPocket = false;
       for(const p of pockets){
-        if(Math.hypot(b.x - p.x, b.y - p.y) < POCKET_GAP){ nearPocket = true; break; }
+        if(Math.hypot(b.x - p.x, b.y - p.y) < catchRadius(p)){ nearPocket = true; break; }
       }
       if(nearPocket) continue;
 
@@ -115,7 +116,7 @@ window.Physics = (function(){
       for(const p of pockets){
         const dist = Math.hypot(b.x - p.x, b.y - p.y);
         const potR = p.r * 0.7;    // радиус «забития»: центр шара внутри → pot
-        const catchR = p.r * 1.05; // радиус «горлышка»: зона притяжения
+        const catchR = catchRadius(p);
         if(dist < catchR){
           if(dist < potR){ onPot(b); break; }
           // Заметное затягивание к центру лузы.
