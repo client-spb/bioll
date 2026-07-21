@@ -28,6 +28,9 @@ window.Physics = (function(){
     let moving = false;
 
     // 1) Перемещение + трение + стены
+    // Радиус, внутри которого луза «размыкает» борт: шар может провалиться,
+    // не отскакивая от стенки. Должен совпадать с catchR из секции луз.
+    const POCKET_GAP = R * 1.5;
     for(const b of balls){
       if(!b.active) continue;
       b.x += b.vx; b.y += b.vy;
@@ -35,6 +38,13 @@ window.Physics = (function(){
       if(Math.abs(b.vx) < MINV) b.vx = 0;
       if(Math.abs(b.vy) < MINV) b.vy = 0;
       if(b.vx !== 0 || b.vy !== 0) moving = true;
+
+      // Шар, попавший в горлышко лузы, не должен отскакивать от борта.
+      let nearPocket = false;
+      for(const p of pockets){
+        if(Math.hypot(b.x - p.x, b.y - p.y) < POCKET_GAP){ nearPocket = true; break; }
+      }
+      if(nearPocket) continue;
 
       const left = table.x + b.r, right = table.x + table.w - b.r;
       const top = table.y + b.r, bot = table.y + table.h - b.r;
