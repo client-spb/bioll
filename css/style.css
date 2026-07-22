@@ -190,6 +190,7 @@ h1 .accent{font-size:.6em;letter-spacing:6px;display:block;margin-top:4px}
 #musicBtn .music-on,#musicBtn .music-off{position:absolute}
 #musicBtn{position:relative;opacity:.55;transition:opacity .2s}
 #musicBtn.active{opacity:1;border-color:rgba(46,204,113,.5);color:#7be0a0;box-shadow:0 0 12px rgba(46,204,113,.3)}
+#musicBtn.muted{opacity:.35;color:#ff7a7a;border-color:rgba(255,91,110,.4)}
 
 /* ============ ШКАЛА СИЛЫ (вертикаль, справа вверху, наполняется снизу вверх) ============ */
 #powerWrap{position:fixed;top:calc(78px + max(0px,env(safe-area-inset-top)));right:max(12px,env(safe-area-inset-right));

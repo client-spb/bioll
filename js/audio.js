@@ -201,12 +201,12 @@ window.Audio2 = (function(){
       stop(){
         stopped = true;
         if(scheduleTimer){ clearTimeout(scheduleTimer); scheduleTimer = null; }
-        // Плавный fade-out.
+        // Гасим мгновенно — чтобы выключение музыки было чётким и немедленным.
         const t = ctx.currentTime;
         try{
           mgain.gain.cancelScheduledValues(t);
-          mgain.gain.setValueAtTime(mgain.gain.value, t);
-          mgain.gain.linearRampToValueAtTime(0, t + 0.4);
+          mgain.gain.setValueAtTime(0, t);
+          mgain.gain.disconnect();
         }catch(e){}
       }
     };

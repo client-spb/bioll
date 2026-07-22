@@ -17,7 +17,8 @@ window.Storage = (function(){
     stars: {},        // { 1: 3, 2: 2, ... } — звёзды за уровень
     totalCoins: 0,    // всего заработано (для статистики)
     sound: true,
-    music: false      // фоновая музыка выкл по умолчанию
+    music: false,     // фоновая музыка выкл по умолчанию
+    audioCycle: 0     // 0=всё вкл, 1=музыка выкл, 2=всё выкл, 3=звуки вкл(музыка выкл)
   };
 
   function migrate(old){
@@ -37,6 +38,12 @@ window.Storage = (function(){
     s.totalCoins = old.totalCoins || s.coins;
     s.sound = old.sound !== false;
     s.music = old.music === true; // по умолчанию выкл
+    // Восстанавливаем звук/музыку из сохранённого цикла, если он есть.
+    if(typeof old.audioCycle === 'number'){
+      s.audioCycle = ((old.audioCycle % 4) + 4) % 4;
+      s.sound  = s.audioCycle !== 2;
+      s.music  = s.audioCycle === 0;
+    }
     return s;
   }
 
