@@ -16,7 +16,12 @@ window.Audio2 = (function(){
     }catch(e){ ctx = null; }
   }
   function resume(){ if(ctx && ctx.state === 'suspended') ctx.resume(); }
-  function setEnabled(v){ enabled = v; if(master) master.gain.value = v ? 0.6 : 0; }
+  // Единый тумблер: включает/выключает ВСЕ звуки и фоновую музыку вместе.
+  function setEnabled(v){
+    enabled = v;
+    if(master) master.gain.value = v ? 0.6 : 0;
+    if(!v) stopMusic();          // выключаем — гасим музыку сразу
+  }
 
   // Базовый тон с огибающей
   function tone(freq, dur, type='sine', vol=.3, slideTo=null, delay=0){
@@ -214,8 +219,9 @@ window.Audio2 = (function(){
   function stopMusic(){
     if(music){ music.stop(); music = null; }
   }
+  // Запускает фоновую музыку, если звук включён.
   function setMusicEnabled(on){
-    if(on){ init(); resume(); startMusic(); }
+    if(on && enabled){ init(); resume(); startMusic(); }
     else { stopMusic(); }
   }
 

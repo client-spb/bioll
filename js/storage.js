@@ -16,9 +16,7 @@ window.Storage = (function(){
     ownedCloths: [0],
     stars: {},        // { 1: 3, 2: 2, ... } — звёзды за уровень
     totalCoins: 0,    // всего заработано (для статистики)
-    sound: true,
-    music: false,     // фоновая музыка выкл по умолчанию
-    audioCycle: 0     // 0=всё вкл, 1=музыка выкл, 2=всё выкл, 3=звуки вкл(музыка выкл)
+    sound: true       // единый тумблер: все звуки + фоновая музыка вместе
   };
 
   function migrate(old){
@@ -36,13 +34,12 @@ window.Storage = (function(){
     s.ownedCloths = Array.isArray(old.ownedCloths) && old.ownedCloths.length ? old.ownedCloths : [0];
     s.stars = old.stars || {};
     s.totalCoins = old.totalCoins || s.coins;
-    s.sound = old.sound !== false;
-    s.music = old.music === true; // по умолчанию выкл
-    // Восстанавливаем звук/музыку из сохранённого цикла, если он есть.
+    // Единый тумблер звука. Совместимость со старым форматом:
+    // если ранее всё было включено (audioCycle===0) — звук вкл, иначе по флагу sound.
     if(typeof old.audioCycle === 'number'){
-      s.audioCycle = ((old.audioCycle % 4) + 4) % 4;
-      s.sound  = s.audioCycle !== 2;
-      s.music  = s.audioCycle === 0;
+      s.sound = old.audioCycle === 0;
+    } else {
+      s.sound = old.sound !== false;
     }
     return s;
   }

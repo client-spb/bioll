@@ -479,15 +479,15 @@ window.Game = (function(){
     $('resumeBtn').onclick = () => { gameState = 'playing'; UI.hidePause(); };
     $('pauseShopBtn').onclick = () => { Audio2.init(); UI.hidePause(); UI.openShop('cue'); };
 
-    // Кнопка звука: зацикленный цикл из 4 шагов.
-    //   0 (всё вкл) → 1 (музыка выкл) → 2 (всё выкл) → 3 (звуки вкл) → 0 ...
+    // Кнопка звука: один тумблер — включает/выключает все звуки и музыку вместе.
     $('musicBtn').onclick = () => {
       Audio2.init();
-      const cur = ((Storage.get().audioCycle||0) % 4 + 4) % 4;
-      const next = (cur + 1) % 4;
-      applyAudioCycle(next);
-      // Короткий щелчок UI, чтобы дать听觉-отклик (если звуки включены).
-      if(next !== 2) Audio2.ui();
+      const next = !Storage.get().sound;
+      Storage.update(s => { s.sound = next; });
+      Audio2.setEnabled(next);
+      Audio2.setMusicEnabled(next);
+      syncAudioBtn(next);
+      if(next) Audio2.ui(); // щелчок-отклик, если только что включили
     };
     $('pauseMenuBtn').onclick = () => {
       if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
@@ -576,9 +576,8 @@ window.Game = (function(){
     resize();
     prevTable = { ...table };
     bindButtons();
-    // Синхронизируем иконку с сохранённым циклом (звук/музыку поднимем по первому жесту).
-    const cyc = ((Storage.get().audioCycle||0) % 4 + 4) % 4;
-    syncAudioBtn(cyc === 0, cyc !== 2);
+    // Синхронизируем иконку с сохранённым тумблером звука (звук поднимем по первому жесту).
+    syncAudioBtn(Storage.get().sound !== false);
 
     await loadAssets();
 
@@ -590,31 +589,20 @@ window.Game = (function(){
     requestAnimationFrame(loop);
   }
 
-  // Применяет шаг цикла звука: сохраняет, выставляет звук/музыку, обновляет иконку.
-  // 0=всё вкл, 1=музыка выкл, 2=всё выкл, 3=звуки вкл(музыка выкл).
-  function applyAudioCycle(cycle){
-    cycle = ((cycle % 4) + 4) % 4;
-    const soundOn = cycle !== 2;        // звуки выкл только на шаге 2
-    const musicOn = cycle === 0;        // музыка вкл только на шаге 0
-    Storage.update(s => { s.audioCycle = cycle; s.sound = soundOn; s.music = musicOn; });
-    Audio2.setEnabled(soundOn);
-    Audio2.setMusicEnabled(musicOn);
-    syncAudioBtn(musicOn, soundOn);
-  }
-  // Обновляет иконку кнопки: нота (музыка вкл) / перечёркнутая (музыка выкл).
-  function syncAudioBtn(musicOn, soundOn){
-    document.querySelector('#musicBtn .music-on').classList.toggle('hidden', !musicOn);
-    document.querySelector('#musicBtn .music-off').classList.toggle('hidden', musicOn);
+  // Обновляет иконку кнопки: нота (звук вкл) / перечёркнутая (звук выкл).
+  function syncAudioBtn(on){
+    document.querySelector('#musicBtn .music-on').classList.toggle('hidden', !on);
+    document.querySelector('#musicBtn .music-off').classList.toggle('hidden', on);
     const btn = document.getElementById('musicBtn');
-    btn.classList.toggle('active', musicOn);
-    btn.classList.toggle('muted', !soundOn && !musicOn); // полное выключение
+    btn.classList.toggle('active', on);
+    btn.classList.toggle('muted', !on);
   }
   // Поднимает звук/музыку после жеста пользователя (обход политики автоплея).
   function restoreAudio(){
-    const cyc = ((Storage.get().audioCycle||0) % 4 + 4) % 4;
-    Audio2.setEnabled(cyc !== 2);
-    Audio2.setMusicEnabled(cyc === 0);
-    syncAudioBtn(cyc === 0, cyc !== 2);
+    const on = Storage.get().sound !== false;
+    Audio2.setEnabled(on);
+    Audio2.setMusicEnabled(on);
+    syncAudioBtn(on);
   }
 
   return { init, onSkinChanged, startLevel, showLevelStart };
