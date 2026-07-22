@@ -358,12 +358,17 @@ window.Game = (function(){
   }
   function anyMoving(){ return Physics.isMoving(balls); }
 
+  // Кэш доли силы текущего кия относительно топового — чтобы не пересчитывать в onMove.
+  let cuePowerScale = 1;
   function onDown(e){
     if(gameState !== 'playing' || shooting || anyMoving() || !cueBall || !cueBall.active) return;
     const p = getPos(e);
     aiming = true;
     aimStart = { x: cueBall.x, y: cueBall.y };
     aimCur = p;
+    const cue = GameConfig.CUES[Storage.get().cue];
+    const maxPower = Math.max(...GameConfig.CUES.map(c => c.power));
+    cuePowerScale = cue.power / maxPower;
     document.getElementById('powerWrap').style.display = 'block';
     UI.hideHint();
     e.preventDefault();
@@ -372,28 +377,30 @@ window.Game = (function(){
     if(!aiming) return;
     aimCur = getPos(e);
     const dx = aimStart.x - aimCur.x, dy = aimStart.y - aimCur.y;
-    const power = Math.min(Math.hypot(dx, dy) / (table.h*0.4), 1);
-    document.getElementById('powerBar').style.width = (power*100) + '%';
+    // Чувствительность удвоена: максимум силы достигается на половине прежней тяги.
+    const power = Math.min(Math.hypot(dx, dy) / (table.h*0.2), 1);
+    // Масштаб шкалы по кию: слабый кий заполняет её только до своей доли от топового.
+    document.getElementById('powerBar').style.height = (power * cuePowerScale * 100) + '%';
     e.preventDefault();
   }
   function onUp(e){
     if(!aiming) return;
     aiming = false;
     document.getElementById('powerWrap').style.display = 'none';
-    document.getElementById('powerBar').style.width = '0%';
+    document.getElementById('powerBar').style.height = '0%';
     const dx = aimStart.x - aimCur.x, dy = aimStart.y - aimCur.y;
     const dist = Math.hypot(dx, dy);
     if(dist < 10){ return; }
-    const power = Math.min(dist, table.h*0.4);
+    const power = Math.min(dist, table.h*0.2);
     const cue = GameConfig.CUES[Storage.get().cue];
-    const speed = power * 0.13 * cue.power;
+    const speed = power * 0.26 * cue.power;
     const ang = Math.atan2(dy, dx);
     cueBall.vx = Math.cos(ang) * speed;
     cueBall.vy = Math.sin(ang) * speed;
     shooting = true;
     shots++;
     combo = 0; // новый удар — комбо сбрасывается (будет расти при забивании)
-    Audio2.hit(power / (table.h*0.4));
+    Audio2.hit(power / (table.h*0.2));
     updateHud();
     e.preventDefault();
   }
@@ -434,8 +441,8 @@ window.Game = (function(){
   function bindButtons(){
     const $ = id => document.getElementById(id);
 
-    $('playBtn').onclick = () => { Audio2.init(); showLevelStart(Storage.get().level); };
-    $('startBtn').onclick = () => { Audio2.init(); startLevel(pendingLevel); };
+    $('playBtn').onclick = () => { Audio2.init(); if(Storage.get().music) Audio2.setMusicEnabled(true); showLevelStart(Storage.get().level); };
+    $('startBtn').onclick = () => { Audio2.init(); if(Storage.get().music) Audio2.setMusicEnabled(true); startLevel(pendingLevel); };
     $('lsMenu').onclick = () => { gameState = 'menu'; UI.showOverlay('mainMenu'); updateHud(); };
 
     $('nextBtn').onclick = () => {
@@ -471,6 +478,16 @@ window.Game = (function(){
     };
     $('resumeBtn').onclick = () => { gameState = 'playing'; UI.hidePause(); };
     $('pauseShopBtn').onclick = () => { Audio2.init(); UI.hidePause(); UI.openShop('cue'); };
+
+    // Музыка вкл/выкл
+    $('musicBtn').onclick = () => {
+      Audio2.init();
+      const on = !Storage.get().music;
+      Storage.update(s => { s.music = on; });
+      Audio2.setMusicEnabled(on);
+      syncMusicBtn(on);
+      if(on) Audio2.ui();
+    };
     $('pauseMenuBtn').onclick = () => {
       if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
       gameState = 'menu';
@@ -558,6 +575,7 @@ window.Game = (function(){
     resize();
     prevTable = { ...table };
     bindButtons();
+    syncMusicBtn(Storage.get().music);
 
     await loadAssets();
 
@@ -567,6 +585,13 @@ window.Game = (function(){
     updateHud();
     lastTime = performance.now();
     requestAnimationFrame(loop);
+  }
+
+  // Синхронизирует вид кнопки музыки с сохранённым состоянием.
+  function syncMusicBtn(on){
+    document.querySelector('#musicBtn .music-on').classList.toggle('hidden', !on);
+    document.querySelector('#musicBtn .music-off').classList.toggle('hidden', on);
+    document.getElementById('musicBtn').classList.toggle('active', on);
   }
 
   return { init, onSkinChanged, startLevel, showLevelStart };

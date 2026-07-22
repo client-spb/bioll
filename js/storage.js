@@ -16,7 +16,8 @@ window.Storage = (function(){
     ownedCloths: [0],
     stars: {},        // { 1: 3, 2: 2, ... } — звёзды за уровень
     totalCoins: 0,    // всего заработано (для статистики)
-    sound: true
+    sound: true,
+    music: false      // фоновая музыка выкл по умолчанию
   };
 
   function migrate(old){
@@ -35,6 +36,7 @@ window.Storage = (function(){
     s.stars = old.stars || {};
     s.totalCoins = old.totalCoins || s.coins;
     s.sound = old.sound !== false;
+    s.music = old.music === true; // по умолчанию выкл
     return s;
   }
 

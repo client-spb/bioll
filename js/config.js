@@ -15,7 +15,7 @@ window.GameConfig = {
     {
       name: 'Классик',
       price: 0,
-      power: 1.00,   // самый слабый — стартовый
+      power: 0.45,   // самый слабый — стартовый
       aimMode: 'line',
       aimLen: 0.22,
       reflectLen: 0,
@@ -28,7 +28,7 @@ window.GameConfig = {
     {
       name: 'Дуб',
       price: 150,
-      power: 1.12,
+      power: 0.50,
       aimMode: 'line',
       aimLen: 0.45,
       reflectLen: 0,
@@ -41,7 +41,7 @@ window.GameConfig = {
     {
       name: 'Карбон',
       price: 400,
-      power: 1.25,
+      power: 0.55,
       aimMode: 'line',
       aimLen: 1.6,
       reflectLen: 0,
@@ -54,7 +54,7 @@ window.GameConfig = {
     {
       name: 'Снайпер',
       price: 800,
-      power: 1.40,
+      power: 0.62,
       aimMode: 'circle',
       aimLen: 1.6,
       reflectLen: 0,
@@ -67,7 +67,7 @@ window.GameConfig = {
     {
       name: 'Титан',
       price: 1500,
-      power: 1.55,
+      power: 0.69,
       aimMode: 'reflect',
       aimLen: 1.6,
       reflectLen: 0.28,
@@ -80,7 +80,7 @@ window.GameConfig = {
     {
       name: 'Дракон',
       price: 2500,
-      power: 1.72,
+      power: 0.77,
       aimMode: 'reflect',
       aimLen: 1.6,
       reflectLen: 0.7,
@@ -93,7 +93,7 @@ window.GameConfig = {
     {
       name: 'Легенда',
       price: 4000,
-      power: 1.90,
+      power: 0.85,
       aimMode: 'reflect',
       aimLen: 1.6,
       reflectLen: 1.6,

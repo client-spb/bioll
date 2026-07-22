@@ -485,15 +485,16 @@ window.Render = (function(){
       const dx = aimStart.x - aimCur.x, dy = aimStart.y - aimCur.y;
       ang = Math.atan2(dy, dx);
       dist = Math.hypot(dx, dy);
-      power = Math.min(dist, table.h*0.4);
+      power = Math.min(dist, table.h*0.2);
     } else if(lastCueAngle !== null){
       ang = lastCueAngle;
     } else {
       // Пока ни разу не прицеливались — показываем кий со стороны игрока (снизу).
       ang = Math.PI / 2;
     }
-    // Кий прижат вплотную к битку: небольшой зазор, чтобы не тонул в шаре.
-    const back = R + R*0.35 + power*0.45;
+    // Кий не касается битка вплотную: фиксированный зазор 10px + отвод при тяге силы.
+    const GAP = 10;
+    const back = R + GAP + power*0.45;
     const cueLen = table.h*0.42;
     const cueW = Math.max(3, R*0.5);
 

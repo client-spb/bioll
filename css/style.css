@@ -169,6 +169,7 @@ h1 .accent{font-size:.6em;letter-spacing:6px;display:block;margin-top:4px}
 .hud{position:fixed;top:0;left:0;width:100%;padding:10px 12px;z-index:10;pointer-events:none;
   padding-top:max(10px,env(safe-area-inset-top))}
 .hud-inner{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:640px;margin:0 auto;gap:8px}
+.hud-left{display:flex;gap:6px}
 .hud-stats{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;flex:1}
 .hbox{display:inline-flex;align-items:center;gap:6px;
   background:rgba(0,0,0,.55);border-radius:12px;padding:7px 12px;color:#fff;
@@ -186,13 +187,16 @@ h1 .accent{font-size:.6em;letter-spacing:6px;display:block;margin-top:4px}
   padding:0;width:42px;height:42px;border-radius:12px;font-size:1.2em;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
 .hbtn .ic{font-size:1.1em}
 .icon-btn:active{transform:scale(.92)}
+#musicBtn .music-on,#musicBtn .music-off{position:absolute}
+#musicBtn{position:relative;opacity:.55;transition:opacity .2s}
+#musicBtn.active{opacity:1;border-color:rgba(46,204,113,.5);color:#7be0a0;box-shadow:0 0 12px rgba(46,204,113,.3)}
 
-/* ============ ШКАЛА СИЛЫ ============ */
-#powerWrap{position:fixed;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
-  width:75%;max-width:360px;height:26px;background:rgba(0,0,0,.6);border-radius:14px;z-index:10;overflow:hidden;
-  display:none;border:2px solid rgba(255,255,255,.15);box-shadow:0 4px 20px rgba(0,0,0,.5)}
-#powerBar{height:100%;width:0%;transition:width .04s;
-  background:linear-gradient(90deg,#2ecc71 0%,#ffd24a 50%,#ff5b6e 100%);
+/* ============ ШКАЛА СИЛЫ (вертикаль, справа вверху, наполняется снизу вверх) ============ */
+#powerWrap{position:fixed;top:calc(78px + max(0px,env(safe-area-inset-top)));right:max(12px,env(safe-area-inset-right));
+  width:26px;height:42vh;max-height:300px;min-height:140px;background:rgba(0,0,0,.6);border-radius:14px;z-index:10;
+  overflow:hidden;display:none;border:2px solid rgba(255,255,255,.15);box-shadow:0 4px 20px rgba(0,0,0,.5)}
+#powerBar{position:absolute;bottom:0;left:0;height:0%;width:100%;transition:height .04s;
+  background:linear-gradient(0deg,#ff5b6e 0%,#ffd24a 50%,#2ecc71 100%);
   box-shadow:0 0 16px currentColor}
 #hint{position:fixed;bottom:max(54px,calc(env(safe-area-inset-bottom) + 36px));left:0;width:100%;
   text-align:center;color:#cde;font-size:.85em;z-index:9;text-shadow:0 2px 4px #000;pointer-events:none;
